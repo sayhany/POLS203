@@ -18,7 +18,7 @@ pols203_final_merged <- pols203_final_merged %>%
   mutate(id = replace(id, id == 2, "agricultural_output"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 3, "share_of_agriculture_in_GDP"))
+  mutate(id = replace(id, id == 3, "gdp_Per_cap"))
 
 pols203_final_merged <- pols203_final_merged %>%
   mutate(id = replace(id, id == 4, "expenditure_in_tertiary_educatio"))
@@ -27,22 +27,16 @@ pols203_final_merged <- pols203_final_merged %>%
   mutate(id = replace(id, id == 5, "marginal_income_tax"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 6, "book_titles_Per_cap"))
+  mutate(id = replace(id, id == 6, "internet_users"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 7, "internet_users"))
+  mutate(id = replace(id, id == 7, "oil_prod_Per_cap"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 8, "oil_prod_Per_cap"))
+  mutate(id = replace(id, id == 8, "electricity_Per_cap"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 9, "participation_vdem"))
+  mutate(id = replace(id, id == 9, "Real_GDP_Per_cap"))
 
 pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 10, "electricity_Per_cap"))
-
-pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 11, "Real_GDP_Per_cap"))
-
-pols203_final_merged <- pols203_final_merged %>%
-  mutate(id = replace(id, id == 12, "time_req_to_start_a_business"))
+  mutate(id = replace(id, id == 10, "time_req_to_start_a_business"))
