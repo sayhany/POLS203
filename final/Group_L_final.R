@@ -91,4 +91,9 @@ pols_203_final_merged_2004 <- pols_203_final_merged_2004_2014 %>% # Filter for 2
 pols_203_final_merged_2014 <- pols_203_final_merged_2004_2014 %>% # Filter for 2014
   filter(Year == 2014)
 
-
+pols_203_joined <- inner_join(pols_203_final_merged_2004,
+                     pols_203_final_merged_2014,
+                     by = c("Entity"),
+                     suffix = c("_2004",
+                                "_2014"))
+pols_203_joined <- pols_203_joined %>% select(!starts_with("Year"))
