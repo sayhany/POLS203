@@ -4,6 +4,7 @@ library(tidyverse)
 
 # Disable scientific notation
 options(scipen = 999)
+
 # Read the dataset
 pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
 
@@ -65,15 +66,12 @@ pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
 # Move values to a single column to prepare the pols_203_joined for wrangling
 pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`[1:68],
                                           pols_203_final_merged_2004_2014$output_quantity[69:134],
-                                          pols_203_final_merged_2004_2014$`Share of agriculture in GDP at current prices (Herrendorf et al. and GGDC-10 data)`[135:202],
-                                          pols_203_final_merged_2004_2014$`Government expenditure on tertiary education as % of GDP (%)`[203:233],
-                                          pols_203_final_merged_2004_2014$`Book titles per capita (Fink-Jensen 2015)`[234:241],
-                                          pols_203_final_merged_2004_2014$`Number of Internet users`[242:307],
-                                          pols_203_final_merged_2004_2014$`Oil production per capita (kWh)`[308:374],
-                                          pols_203_final_merged_2004_2014$particip_vdem_owid[375:442],
-                                          pols_203_final_merged_2004_2014$`Per capita electricity (kWh)`[443:509],
-                                          pols_203_final_merged_2004_2014$`GDP per capita (output, multiple price benchmarks)`[510:577],
-                                          pols_203_final_merged_2004_2014$`Time required to start a business (days)`[578:642])
+                                          pols_203_final_merged_2004_2014$`Number of Internet users`[135:200],
+                                          pols_203_final_merged_2004_2014$`Oil production per capita (kWh)`[201:267],
+                                          pols_203_final_merged_2004_2014$particip_vdem_owid[268:335],
+                                          pols_203_final_merged_2004_2014$`Per capita electricity (kWh)`[336:402],
+                                          pols_203_final_merged_2004_2014$`GDP per capita (output, multiple price benchmarks)`[403:470],
+                                          pols_203_final_merged_2004_2014$`Time required to start a business (days)`[471:535])
 # Data wrangling
 pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
   select("id",
@@ -104,19 +102,7 @@ names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country" # Change
 # Examine
 View(pols_203_joined)
 
-# "share_of_agriculture_in_GDP", "expenditure_in_tertiary_educatio_2004" and "book_titles_Per_cap" columns
-# have missing values for many countries
-## Omitting them is the most reasonable choice
-## Omit "share_of_agriculture_in_GDP", "expenditure_in_tertiary_educatio_2004" and "book_titles_Per_cap"
-pols_203_joined <- pols_203_joined %>%
-  select(-c("share_of_agriculture_in_GDP_2004",
-           "share_of_agriculture_in_GDP_2014",
-           "book_titles_Per_cap_2004",
-           "book_titles_Per_cap_2014",
-           "expenditure_in_tertiary_educatio_2004",
-           "expenditure_in_tertiary_educatio_2014"))
-
-# Omit countries that still have missing values
+# Omit countries that have missing values
 pols_203_joined <- na.omit(pols_203_joined)
 
 # Create a vector that lists all the EU countries
