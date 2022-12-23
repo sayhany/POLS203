@@ -144,7 +144,7 @@ pols_203_joined <- pols_203_joined %>%
 summary(pols_203_joined)
 # Discussion: Some columns have N/As
 # We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have many missing values
-# However, we will fill the other values that are missing just for 2004 
+# However, we will fill the few other values that are missing just for 2004 
 # by using imputation (lm & data for 2014)
 
 # Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
