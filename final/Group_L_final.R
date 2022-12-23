@@ -13,9 +13,6 @@ pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
 # Examine the structure of the dataset
 str(pols_203_final_merged)
 
-# View the dataset
-View(pols_203_final_merged)
-
 # Filter 2004 and 2014
 pols_203_final_merged_2004_2014 <- pols_203_final_merged %>%
   filter(Year == 2004 | Year == 2014)
@@ -147,15 +144,34 @@ pols_203_joined <- pols_203_joined %>%
 summary(pols_203_joined)
 # Discussion: Some columns have N/As
 # We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have many missing values
-# However, we will fill the missing values for other columns using imputation
+# However, we will fill the other values that are missing just for 2004 
+# by using imputation (lm & data for 2014)
 
 # Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
 pols_203_joined <- pols_203_joined %>%
   select(!c(gov_exp_tertiary_ed_vs_GDP_2004,
             gov_exp_tertiary_ed_vs_GDP_2014))
   
-# Imputation
+# Imputation by linear regression
+## tourists_2004
+pols_203_joined <- impute_lm(pols_203_joined,
+                             tourists_2004 ~ tourists_2014)
 
+## agricultural_output_2004
+pols_203_joined <- impute_lm(pols_203_joined,
+                             agricultural_output_2004 ~ agricultural_output_2014)
 
+## oil_production_per_cap_2004
+pols_203_joined <- impute_lm(pols_203_joined,
+                          oil_production_per_cap_2004 ~ oil_production_per_cap_2014)
 
+## electricity_per_cap_2004
+pols_203_joined <- impute_lm(pols_203_joined,
+                             electricity_per_cap_2004 ~ electricity_per_cap_2014)
 
+## time_req_to_start_business_2004
+pols_203_joined <- impute_lm(pols_203_joined,
+                             time_req_to_start_business_2004 ~ time_req_to_start_business_2014)
+
+# Summary
+summary(pols_203_joined)
