@@ -1,9 +1,8 @@
 # Load the required packages
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
-
 # Disable scientific notation
-options(scipen = 999)
+# options(scipen = 999)
 
 # Read the dataset
 pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
@@ -102,9 +101,6 @@ names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country" # Change
 # Examine
 View(pols_203_joined)
 
-# Omit countries that have missing values
-pols_203_joined <- na.omit(pols_203_joined)
-
 # Create a vector that lists all the EU countries
 eu <- c("Austria", 
         "Belgium",
@@ -132,4 +128,14 @@ eu <- c("Austria",
         "Slovakia",
         "Slovenia",
         "Spain",
-        "Sweden")
+        "Sweden",
+        "United Kingdom") # In 2014 the UK was a EU member 
+
+p <- pols_203_joined %>%
+  mutate(eu = case_when(country %in% eu ~ TRUE,
+                        !(country %in% eu) ~ FALSE ))
+
+# Summarize the data
+
+# Omit countries that have missing values
+pols_203_joined <- na.omit(pols_203_joined)
