@@ -1,8 +1,11 @@
 # Load the required packages
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
+
+if (!require(simputation)) install.packages('simputation')
+library(simputation)
 # Disable scientific notation
-# options(scipen = 999)
+options(scipen = 999)
 
 # Read the dataset
 pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
@@ -63,14 +66,18 @@ pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
   filter(Entity %in% country_vector)
 
 # Move values to a single column to prepare the pols_203_joined for wrangling
+## Spot the first appearance of each variable
+match(unique(pols_203_final_merged_2004_2014$id), pols_203_final_merged_2004_2014$id)
 pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`[1:68],
                                           pols_203_final_merged_2004_2014$output_quantity[69:134],
-                                          pols_203_final_merged_2004_2014$`Number of Internet users`[135:200],
-                                          pols_203_final_merged_2004_2014$`Oil production per capita (kWh)`[201:267],
-                                          pols_203_final_merged_2004_2014$particip_vdem_owid[268:335],
-                                          pols_203_final_merged_2004_2014$`Per capita electricity (kWh)`[336:402],
-                                          pols_203_final_merged_2004_2014$`GDP per capita (output, multiple price benchmarks)`[403:470],
-                                          pols_203_final_merged_2004_2014$`Time required to start a business (days)`[471:535])
+                                          pols_203_final_merged_2004_2014$`Government expenditure on tertiary education as % of GDP (%)`[135:165],
+                                          pols_203_final_merged_2004_2014$`International tourism, number of arrivals`[166:229],
+                                          pols_203_final_merged_2004_2014$`Oil production per capita (kWh)`[230:296],
+                                          pols_203_final_merged_2004_2014$particip_vdem_owid[297:364],
+                                          pols_203_final_merged_2004_2014$`Per capita electricity (kWh)`[365:431],
+                                          pols_203_final_merged_2004_2014$`GDP per capita (output, multiple price benchmarks)`[432:499],
+                                          pols_203_final_merged_2004_2014$`Time required to start a business (days)`[500:564],
+                                          pols_203_final_merged_2004_2014$Population[565:632])
 # Data wrangling
 pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
   select("id",
@@ -131,11 +138,24 @@ eu <- c("Austria",
         "Sweden",
         "United Kingdom") # In 2014 the UK was a EU member 
 
-p <- pols_203_joined %>%
+# Whether they are members of  the EU
+pols_203_joined <- pols_203_joined %>%
   mutate(eu = case_when(country %in% eu ~ TRUE,
                         !(country %in% eu) ~ FALSE ))
 
-# Summarize the data
+# Summary
+summary(pols_203_joined)
+# Discussion: Some columns have N/As
+# We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have many missing values
+# However, we will fill the missing values for other columns using imputation
 
-# Omit countries that have missing values
-pols_203_joined <- na.omit(pols_203_joined)
+# Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
+pols_203_joined <- pols_203_joined %>%
+  select(!c(gov_exp_tertiary_ed_vs_GDP_2004,
+            gov_exp_tertiary_ed_vs_GDP_2014))
+  
+# Imputation
+
+
+
+
