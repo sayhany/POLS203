@@ -238,8 +238,21 @@ forest_tibble <- forest_tibble %>% # Calculate the per capita value if needed
          agricultural_output_per_cap_2014 = agricultural_output_2014 / population_2014,
          tourists_per_cap_2004 = tourists_2004 / population_2004,
          tourists_per_cap_2014 = tourists_2014 / population_2014,
-         growth = (real_GDP_per_cap_2014 - real_GDP_per_cap_2004) / real_GDP_per_cap_2004
-         ) %>%
+         total_dependency_ratio_mean = (total_dependency_ratio_2004 + 
+                                        total_dependency_ratio_2014) / 2,
+         oil_production_per_cap_mean = (oil_production_per_cap_2004 +
+                                        oil_production_per_cap_2014) / 2,
+         democracy_mean = (democracy_2004 +
+                                democracy_2014) / 2,
+         electricity_per_cap_mean = (electricity_per_cap_2004 +
+                                       electricity_per_cap_2014) / 2,
+         real_GDP_per_cap_mean = (real_GDP_per_cap_2004 +
+                                  real_GDP_per_cap_2014) / 2,
+         time_req_to_start_business_mean = (time_req_to_start_business_2004 +
+                                            time_req_to_start_business_2014) / 2) %>%
+  mutate(tourists_per_cap_mean = (tourists_per_cap_2004 +
+                                  tourists_per_cap_2014) / 2) %>%
+  mutate(growth = (real_GDP_per_cap_2014 - real_GDP_per_cap_2004) / real_GDP_per_cap_2004) %>%
 
 dplyr::select(-c("agricultural_output_2004", # Delete the unnecessary columns
                  "agricultural_output_2014",
@@ -352,25 +365,32 @@ t_test
 ##----------------------------------------------------------------
 ##                    Descriptive statistics                    --
 ##----------------------------------------------------------------
+# Spot the outliers
+boxplot(forest_tibble$total_dependency_ratio_mean)
+boxplot(forest_tibble$oil_production_per_cap_mean)
+boxplot(forest_tibble$democracy_mean)
+boxplot(forest_tibble$electricity_per_cap_mean)
+boxplot(forest_tibble$time_req_to_start_business_mean)
+boxplot(forest_tibble$tourists_per_cap_mean)
 
 ##----------------------------------------------------------------
 ##                        Build a model                         --
 ##----------------------------------------------------------------
 
-m0 <- lm(growth ~ total_dependency_ratio_2004 + oil_production_per_cap_2004 +
-                  democracy_2004 + electricity_per_cap_2004 +
-                  time_req_to_start_business_2004 +
-                  eu,
-         data = forest_tibble)
+m0 <- lm(growth ~ total_dependency_ratio_mean +
+         oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           eu, data = forest_tibble)
 
 # Use stepAIC
 aic <- stepAIC(m0)
 aic
-m_fin <- lm(growth ~ democracy_2004 +
-              time_req_to_start_business_2004 +
-              eu,
-            data = forest_tibble)
 
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
