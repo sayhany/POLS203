@@ -21,6 +21,11 @@ library(simputation) # Simple linear imputation
 if (!require(missForest)) install.packages('missForest')
 library(missForest) # Imputation by using random forest algorithm
 
+if (!require(car)) install.packages('car')
+library(car)
+
+if (!require(plot3D)) install.packages('plot3D')
+library(plot3D)
 # Disable scientific notation
 options(scipen = 999)
 
@@ -365,11 +370,12 @@ t_test
 ##----------------------------------------------------------------
 ##                    Descriptive statistics                    --
 ##----------------------------------------------------------------
-# Spot the outliers
+# Boxplots
+boxplot(forest_tibble$total_dependency_ratio_mean)
 boxplot(forest_tibble$total_dependency_ratio_mean)
 boxplot(forest_tibble$oil_production_per_cap_mean)
 boxplot(forest_tibble$democracy_mean)
-boxplot(forest_tibble$electricity_per_cap_mean)
+boxplot(forest_tibble$electricity_per_cap_mean)$stats
 boxplot(forest_tibble$time_req_to_start_business_mean)
 boxplot(forest_tibble$tourists_per_cap_mean)
 
@@ -377,18 +383,117 @@ boxplot(forest_tibble$tourists_per_cap_mean)
 ##                        Build a model                         --
 ##----------------------------------------------------------------
 
+# The original model
 m0 <- lm(growth ~ total_dependency_ratio_mean +
-         oil_production_per_cap_mean + 
+          oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
            electricity_per_cap_mean +
            time_req_to_start_business_mean +
            tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-# Use stepAIC
+## Diagnostics
+summary(m0)
+
+# Use "Akaike information criterion" for model selection
 aic <- stepAIC(m0)
-aic
+aic$anova
+
+# Remove total_dependency_ratio_mean
+m1 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+
+## Diagnostics
+summary(m1)
+
+# Remove tourists_per_cap_mean
+m2 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+
+## Diagnostics
+summary(m2)
+
+# electricity_per_cap_mean
+m3 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+
+## Diagnostics
+summary(m3)
+
+# Remove eu
+m4 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004,
+         data = forest_tibble)
+
+## Diagnostics
+summary(m4)
+
+### Apparently, we can explain the growth without using the EU membership data
+### This finding refutes what we did in the first project
+
+# Remove time_req_to_start_business_mean
+m5 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           real_GDP_per_cap_2004,
+         data = forest_tibble)
+
+## Diagnostics
+summary(m5)
+
+# Remove oil_production_per_cap_mean
+m6 <- lm(growth ~ democracy_mean +
+           real_GDP_per_cap_2004,
+         data = forest_tibble)
+
+## Diagnostics
+summary(m6)
+
+## Plot the diagnostics
+plot(m6)
+
+# Plot the final model
+## 3-dimensional plot
+scatter3D(forest_tibble$real_GDP_per_cap_2004,
+          forest_tibble$democracy_mean,
+          forest_tibble$growth,
+          labels = c("GDP per cap 2004",
+                     "Democracy score",
+                     "Growth 2004-2014"))
+## 2-dimensional plot
+ggplot(forest_tibble,
+       aes(x = real_GDP_per_cap_2004,
+           y = growth,
+           color = democracy_mean)) +
+  scale_y_log10() +
+  geom_point() +
+  scale_color_viridis_c(option = "inferno",
+                        alpha = 0.8,
+                        name = "Democracy score") +
+  xlab("Real GDP per capita in 2004") +
+  ylab("Real GDP per capita growth") +
+  ggtitle("Our final linear model") +
+  labs(caption = "Source: Our World in Data")
 
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
