@@ -2,6 +2,21 @@
 ##                       I. Introduction                       ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+## Group L Second Project
+## Emirhan Yücel 2020302264
+## Mübin Salih Sarıçiçek 2020302243
+## Sayhan Yalvaçer 2019202063
+#---------------------------------------------------------------#
+## Dataset: https://github.com/sayhany/POLS203/raw/main/final/pols_203_final_merged.csv
+## Alternative link: https://www.dropbox.com/s/e67eyagnrgepzg3/pols_203_final_merged.csv
+## Our GitHub repository: https://github.com/sayhany/POLS203
+#---------------------------------------------------------------#
+## All data is retrieved from "Our World in Data"
+## Since the website does not allow bulk downloading, we merged different
+## files. You can examine the R script used for that purpose from:
+## https://github.com/sayhany/POLS203/blob/main/final/merge_datasets.R
+
+
 ##...............................................................
 ##                      Start of the code                       .
 ##...............................................................
@@ -179,7 +194,7 @@ summary(pols_203_joined)
 # We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have 
 # many missing values
 # However, we will fill the few other values that are missing just for 2004 
-# by using imputation
+# by using imputation (from the Chapter 16 of the textbook)
 
 # Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
 pols_203_joined <- pols_203_joined %>%
@@ -383,6 +398,13 @@ boxplot(forest_tibble$tourists_per_cap_mean)
 ##                        Build a model                         --
 ##----------------------------------------------------------------
 
+# Correlation matrix
+cor_matrix <- cor(forest_tibble[, 2:19])
+
+## Plot the correlation matrix
+corrplot(cor_matrix,
+         tl.cex = 0.5)
+
 # The original model
 m0 <- lm(growth ~ total_dependency_ratio_mean +
           oil_production_per_cap_mean + 
@@ -399,9 +421,10 @@ summary(m0)
 
 # Use "Akaike information criterion" for model selection
 aic <- stepAIC(m0)
-aic$anova
+aic$anova # View the steps
 
-# Remove total_dependency_ratio_mean
+## Description of the steps
+### Remove total_dependency_ratio_mean
 m1 <- lm(growth ~ oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
@@ -411,10 +434,10 @@ m1 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-## Diagnostics
+#### Diagnostics
 summary(m1)
 
-# Remove tourists_per_cap_mean
+### Remove tourists_per_cap_mean
 m2 <- lm(growth ~ oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
@@ -423,10 +446,10 @@ m2 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-## Diagnostics
+#### Diagnostics
 summary(m2)
 
-# electricity_per_cap_mean
+### Remove electricity_per_cap_mean
 m3 <- lm(growth ~ oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
@@ -434,10 +457,10 @@ m3 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-## Diagnostics
+#### Diagnostics
 summary(m3)
 
-# Remove eu
+### Remove eu
 m4 <- lm(growth ~ oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
@@ -445,7 +468,7 @@ m4 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004,
          data = forest_tibble)
 
-## Diagnostics
+#### Diagnostics
 summary(m4)
 
 ### Apparently, we can explain the growth without using the EU membership data
@@ -486,7 +509,7 @@ ggplot(forest_tibble,
            y = growth,
            color = democracy_mean)) +
   scale_y_log10() +
-  geom_point() +
+  geom_point(size = 4.2) +
   scale_color_viridis_c(option = "inferno",
                         alpha = 0.8,
                         name = "Democracy score") +
