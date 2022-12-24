@@ -1,12 +1,29 @@
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+##                       I. Introduction                       ::
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+##...............................................................
+##                      Start of the code                       .
+##...............................................................
 # Load the required packages
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
 
+if (!require(MASS)) install.packages('MASS')
+library(MASS)
+
 if (!require(simputation)) install.packages('simputation')
 library(simputation)
+
+if (!require(missForest)) install.packages('missForest')
+library(missForest)
+
 # Disable scientific notation
 options(scipen = 999)
 
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+##                    II. Data manipulation                    ::
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 # Read the dataset
 pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
 
@@ -65,6 +82,8 @@ pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
 # Move values to a single column to prepare the pols_203_joined for wrangling
 ## Spot the first appearance of each variable
 match(unique(pols_203_final_merged_2004_2014$id), pols_203_final_merged_2004_2014$id)
+
+## Move the columns
 pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`[1:68],
                                           pols_203_final_merged_2004_2014$output_quantity[69:134],
                                           pols_203_final_merged_2004_2014$`Government expenditure on tertiary education as % of GDP (%)`[135:165],
@@ -77,7 +96,7 @@ pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total
                                           pols_203_final_merged_2004_2014$Population[565:632])
 # Data wrangling
 pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
-  select("id",
+  dplyr::select("id",
          "Entity",
          "Year",
          "value") %>%
@@ -85,10 +104,12 @@ pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
               values_from = "value")
 
 # Split the dataframe into two by year
-pols_203_final_merged_2004 <- pols_203_final_merged_2004_2014 %>% # Filter for 2004
+## Filter for 2004
+pols_203_final_merged_2004 <- pols_203_final_merged_2004_2014 %>% 
   filter(Year == 2004)
 
-pols_203_final_merged_2014 <- pols_203_final_merged_2004_2014 %>% # Filter for 2014
+## Filter for 2014
+pols_203_final_merged_2014 <- pols_203_final_merged_2004_2014 %>%
   filter(Year == 2014)
 
 pols_203_joined <- inner_join(pols_203_final_merged_2004,
@@ -97,10 +118,11 @@ pols_203_joined <- inner_join(pols_203_final_merged_2004,
                      suffix = c("_2004",
                                 "_2014"))
 
-pols_203_joined <- pols_203_joined %>% select(!starts_with("Year")) # Remove the redundant "Year" column
+# Remove the redundant "Year" column
+pols_203_joined <- pols_203_joined %>% dplyr::select(!starts_with("Year"))
 
 # Rename the "Entities" column
-names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country" # Change with "country"
+names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country"
 
 # Examine
 View(pols_203_joined)
@@ -143,35 +165,84 @@ pols_203_joined <- pols_203_joined %>%
 # Summary
 summary(pols_203_joined)
 # Discussion: Some columns have N/As
-# We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have many missing values
+# We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have 
+# many missing values
 # However, we will fill the few other values that are missing just for 2004 
-# by using imputation (lm & data for 2014)
+# by using imputation
 
 # Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
 pols_203_joined <- pols_203_joined %>%
-  select(!c(gov_exp_tertiary_ed_vs_GDP_2004,
+  dplyr::select(!c(gov_exp_tertiary_ed_vs_GDP_2004,
             gov_exp_tertiary_ed_vs_GDP_2014))
   
 # Imputation by linear regression
 ## tourists_2004
+plot(pols_203_joined$tourists_2014, pols_203_joined$tourists_2004) # The relationship is linear
+
+### Imputation by linear regression is justified
 pols_203_joined <- impute_lm(pols_203_joined,
                              tourists_2004 ~ tourists_2014)
 
 ## agricultural_output_2004
-pols_203_joined <- impute_lm(pols_203_joined,
-                             agricultural_output_2004 ~ agricultural_output_2014)
+plot(pols_203_joined$agricultural_output_2004, pols_203_joined$agricultural_output_2014) # The relationship is non-linear
+
+### Imputation by linear regression is not justified
 
 ## oil_production_per_cap_2004
-pols_203_joined <- impute_lm(pols_203_joined,
-                          oil_production_per_cap_2004 ~ oil_production_per_cap_2014)
+plot(pols_203_joined$oil_production_per_cap_2014, pols_203_joined$oil_production_per_cap_2004) # The relationship is non-linear
+
+### Imputation by linear regression is not justified
 
 ## electricity_per_cap_2004
-pols_203_joined <- impute_lm(pols_203_joined,
-                             electricity_per_cap_2004 ~ electricity_per_cap_2014)
+plot(pols_203_joined$electricity_per_cap_2014, pols_203_joined$electricity_per_cap_2004) # The relationship is non-linear
+
+### Imputation by linear regression is not justified
 
 ## time_req_to_start_business_2004
-pols_203_joined <- impute_lm(pols_203_joined,
-                             time_req_to_start_business_2004 ~ time_req_to_start_business_2014)
+plot(pols_203_joined$time_req_to_start_business_2014, pols_203_joined$time_req_to_start_business_2004) # The is not much relationship
+
+### Imputation by linear regression is not justified
+
+# We decided to fill the remaining missing values by using a non-parametric
+# algorithm called "randomForest"
+## Prepare the dataset for imputation
+pols_203_joined_4_imp <- dplyr::select(pols_203_joined, -c("country", "eu"))
+
+### Convert it to an ordinary dataframe
+pols_203_joined_4_imp <- as.data.frame(pols_203_joined_4_imp)
+
+### Run the algorithm
+forest <- missForest(pols_203_joined_4_imp)
+
+### Convert it back to a tibble
+forest_tibble <- as_tibble(forest$ximp)
+
+### Add the "country" and "eu" columns
+forest_tibble <- bind_cols(pols_203_joined$country, forest_tibble, pols_203_joined$eu)
+
+#### Repair column names
+colnames(forest_tibble)[1] <- "country"
+colnames(forest_tibble)[20] <- "eu"
 
 # Summary
-summary(pols_203_joined)
+summary(forest_tibble)
+
+forest_tibble <- forest_tibble %>% # Calculate the per capita value if needed
+  mutate(agricultural_output_per_cap_2004 = agricultural_output_2004 / population_2004,
+         agricultural_output_per_cap_2014 = agricultural_output_2014 / population_2014,
+         tourists_per_cap_2004 = tourists_2004 / population_2004,
+         tourists_per_cap_2014 = tourists_2014 / population_2014,
+         ) %>%
+
+dplyr::select(-c("agricultural_output_2004", # Delete the unnecessary columns
+                 "agricultural_output_2014",
+                 "tourists_2004",
+                 "tourists_2014")) %>%
+  relocate(eu, .after = tourists_per_cap_2014) # Move eu to the end
+
+##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+##                III. First part of the project                ::
+##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
