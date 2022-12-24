@@ -9,17 +9,23 @@
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
 
+if (!require(ggthemes)) install.packages('ggthemes')
+library(ggthemes) # Themes for ggplot2
+
 if (!require(MASS)) install.packages('MASS')
-library(MASS)
+library(MASS) # For stepAIC
 
 if (!require(simputation)) install.packages('simputation')
-library(simputation)
+library(simputation) # Simple linear imputation
 
 if (!require(missForest)) install.packages('missForest')
-library(missForest)
+library(missForest) # Imputation by using random forest algorithm
 
 # Disable scientific notation
 options(scipen = 999)
+
+# Set seed
+set.seed(203) # For the reproducibility of random forest results
 
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                    II. Data manipulation                    ::
@@ -232,17 +238,139 @@ forest_tibble <- forest_tibble %>% # Calculate the per capita value if needed
          agricultural_output_per_cap_2014 = agricultural_output_2014 / population_2014,
          tourists_per_cap_2004 = tourists_2004 / population_2004,
          tourists_per_cap_2014 = tourists_2014 / population_2014,
+         growth = (real_GDP_per_cap_2014 - real_GDP_per_cap_2004) / real_GDP_per_cap_2004
          ) %>%
 
 dplyr::select(-c("agricultural_output_2004", # Delete the unnecessary columns
                  "agricultural_output_2014",
                  "tourists_2004",
                  "tourists_2014")) %>%
-  relocate(eu, .after = tourists_per_cap_2014) # Move eu to the end
+relocate(eu, .after = growth) # Move eu to the end
 
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                III. First part of the project                ::
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+# In our first project we tried to answer the question whether former Eastern 
+# Bloc countries that joined the EU in 2004 enjoyed higher GDP PPP per capita
+# growth rates? We will briefly replicate what we did back then as the first
+# part of this project
 
+#----------------------------------------------------------------#
 
+# Independent variable: Joining the EU in 2004 (nominal)
+# Dependent variable: GDP PPP per capita growth (continuous numerical)
+
+#----------------------------------------------------------------#
+
+# Alternative hypothesis: Mean GDP PPP per capita growth between 2004 - 2014 for
+# the former Eastern Bloc countries that joined the EU is lower than the mean 
+# GDP PPP per capita growth for the former Eastern Bloc countries that did not
+# join the union
+
+# Null-hypothesis: It is equal or greater
+
+#----------------------------------------------------------------#
+
+# Strategy: Compare them and apply a t-test
+
+##................................................................
+##                      Start of the code                        .
+##................................................................
+
+# Create a vector of the countries that we compared in the first project
+eastern_bloc_old <- c("Poland",
+                      "Czechia",
+                      "Estonia",
+                      "Hungary",
+                      "Latvia",
+                      "Lithuania",
+                      "Slovakia",
+                      "Slovenia",
+                      "Belarus",
+                      "Russia",
+                      "Moldova",
+                      "Armenia")
+                  
+
+# Filter them and save as another dataframe
+eastern_bloc.df <- forest_tibble[forest_tibble$country %in% eastern_bloc_old, ]
+
+# Summarize
+eastern_bloc.df %>%
+  group_by(eu) %>%
+  summarize(mean_growth_per_cent = mean(growth) * 100)
+
+# Plot
+ggplot(eastern_bloc.df,
+       aes(x = fct_reorder(country, growth),
+           y = growth * 100, fill = eu)) +
+  geom_col() +
+  xlab("Countries") +
+  ylab("GDP per capita, real GDP growth per cent 2004-2014") +
+  coord_flip() +
+  theme_economist() +
+  theme(axis.title.x = element_text(margin = margin(t = 15)),
+        axis.title.y = element_text(margin = margin(r = 15))) +
+  scale_fill_discrete("Did join the EU?") +
+  geom_hline(yintercept = mean(eastern_bloc.df$growth * 100),
+             color = "grey40",
+             linetype = 3) +
+  annotate(
+    "text",
+    x = 4, y = 80,
+    label = "The\nmean\ngrowth",
+    vjust = 1, size = 2.5, color = "grey40") +
+  annotate(
+    "curve",
+    x = 4.1, y = 80,
+    xend = 4.6, yend = 71.5,
+    arrow = arrow(length = unit(0.15, "cm"), type = "closed"),
+    color = "grey40") +
+  labs(caption = "Source: Our World in Data")
+
+# Significance test
+t_test <- t.test(eastern_bloc.df$growth[!eastern_bloc.df$eu],
+                 eastern_bloc.df$growth[eastern_bloc.df$eu],
+                 paired = FALSE,
+                 conf.level = 0.05)
+
+## Is it statistically significant?
+t_test$p.value < 0.05
+
+## t-test
+t_test
+
+##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+##                IV. Second part of the project                ::
+##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+##................................................................
+##                      Start of the code                        .
+##................................................................
+
+##----------------------------------------------------------------
+##                    Descriptive statistics                    --
+##----------------------------------------------------------------
+
+##----------------------------------------------------------------
+##                        Build a model                         --
+##----------------------------------------------------------------
+
+m0 <- lm(growth ~ total_dependency_ratio_2004 + oil_production_per_cap_2004 +
+                  democracy_2004 + electricity_per_cap_2004 +
+                  time_req_to_start_business_2004 +
+                  eu,
+         data = forest_tibble)
+
+# Use stepAIC
+aic <- stepAIC(m0)
+aic
+m_fin <- lm(growth ~ democracy_2004 +
+              time_req_to_start_business_2004 +
+              eu,
+            data = forest_tibble)
+
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+##                        V. Conclusion                        ::
+##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
