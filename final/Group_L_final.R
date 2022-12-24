@@ -37,10 +37,11 @@ if (!require(missForest)) install.packages('missForest')
 library(missForest) # Imputation by using random forest algorithm
 
 if (!require(car)) install.packages('car')
-library(car)
+library(car) # For vif
 
 if (!require(plot3D)) install.packages('plot3D')
-library(plot3D)
+library(plot3D) # Three-dimensional plots
+
 # Disable scientific notation
 options(scipen = 999)
 
@@ -394,6 +395,9 @@ boxplot(forest_tibble$electricity_per_cap_mean)$stats
 boxplot(forest_tibble$time_req_to_start_business_mean)
 boxplot(forest_tibble$tourists_per_cap_mean)
 
+## We have several outliers. However we decided not to remove them
+## since we want to avoid overfitting at all costs
+
 ##----------------------------------------------------------------
 ##                        Build a model                         --
 ##----------------------------------------------------------------
@@ -404,6 +408,7 @@ cor_matrix <- cor(forest_tibble[, 2:19])
 ## Plot the correlation matrix
 corrplot(cor_matrix,
          tl.cex = 0.5)
+
 
 # The original model
 m0 <- lm(growth ~ total_dependency_ratio_mean +
@@ -492,8 +497,48 @@ m6 <- lm(growth ~ democracy_mean +
 ## Diagnostics
 summary(m6)
 
-## Plot the diagnostics
-plot(m6)
+### Variance inflation factor
+vif(type= "predictor", # VIF = 1.387538
+    m6) # Multicollinearity does not exist
+
+## Although the model with real_GDP_per_cap_2004 has more explanatory power,
+## its statistical significance is low. Perhaps, real_GDP_per_cap_2004 and
+## democracy_mean interact. We will try one last model.
+m7 <- lm(growth ~ democracy_mean *
+           real_GDP_per_cap_2004,
+         data = forest_tibble)
+
+### Diagnostics
+summary(m7)
+
+### Plot the diagnostics
+plot(m7)
+
+## Q-Q plot
+qqnorm(m7$residuals) + qqline(m7$residuals)
+
+## Shapiro-Wilk test
+shapiro.test(m7$residuals) # Null-hypothesis: distribution is normal
+stdres(m7)
+## p-value = 0.0003711
+## Normality of residuals is rejected
+
+## Perhaps we need to remove some outliers
+forest_tibble_2 <- forest_tibble[-3,]
+
+## Now call the linear model again
+m8 <- lm(growth ~ democracy_mean *
+           real_GDP_per_cap_2004,
+         data = forest_tibble_2)
+
+### Diagnostics
+summary(m8)
+
+### Plot the diagnostics
+plot(m8)
+
+## Q-Q plot
+qqnorm(m8$residuals) + qqline(m8$residuals)
 
 # Plot the final model
 ## 3-dimensional plot
@@ -521,4 +566,3 @@ ggplot(forest_tibble,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
