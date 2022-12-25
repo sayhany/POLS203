@@ -39,6 +39,9 @@ library(missForest) # Imputation by using random forest algorithm
 if (!require(car)) install.packages('car')
 library(car) # For vif
 
+if (!require(corrplot)) install.packages('corrplot')
+library(corrplot) # For plotting correlation matrices
+
 if (!require(plot3D)) install.packages('plot3D')
 library(plot3D) # Three-dimensional plots
 
@@ -523,8 +526,9 @@ stdres(m7)
 ## p-value = 0.0003711
 ## Normality of residuals is rejected
 
-## Perhaps we need to remove some outliers
-forest_tibble_2 <- forest_tibble[-3,]
+## Perhaps we need to remove some variables
+forest_tibble_2 <- forest_tibble[-c(3, 4, 33),]
+# Azerbaijan, Belarus, Switzerland are removed 
 
 ## Now call the linear model again
 m8 <- lm(growth ~ democracy_mean *
