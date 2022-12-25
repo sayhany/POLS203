@@ -357,7 +357,7 @@ colnames(forest_tibble)[1] <- "country"
 colnames(forest_tibble)[20] <- "eu"
 
 # Summary
-summary(forest_tibble)
+summary(forest_tibble) # There is no N/A left
 
 forest_tibble <- forest_tibble %>% 
   mutate(agricultural_output_per_cap_2004 = agricultural_output_2004 / population_2004, # Calculate the per capita value
@@ -402,17 +402,21 @@ relocate(eu, .after = growth) # Move eu to the end
 # Dependent variable: GDP PPP per capita growth (continuous numerical)
 
 #----------------------------------------------------------------#
-
-# Alternative hypothesis: Mean GDP PPP per capita growth between 2004 - 2014 for
-# the former Eastern Bloc countries that joined the EU is lower than the mean 
+# Null-hypothesis: Mean GDP PPP per capita growth between 2004 - 2014 for
+# the former Eastern Bloc countries that joined the EU is equal to the mean 
 # GDP PPP per capita growth for the former Eastern Bloc countries that did not
 # join the union
 
-# Null-hypothesis: It is equal or greater
+# Alternative hypothesis: Mean GDP PPP per capita growth between 2004 - 2014 for
+# the former Eastern Bloc countries that joined the EU is not equal to the mean 
+# GDP PPP per capita growth for the former Eastern Bloc countries that did not
+# join the union
+
 
 #----------------------------------------------------------------#
 
-# Strategy: Compare them and apply a t-test
+# Strategy: Compare the treatment and control groups and 
+# then apply a t-test
 
 ##................................................................
 ##                      Start of the code                        .
@@ -476,7 +480,7 @@ t_test <- t.test(eastern_bloc.df$growth[!eastern_bloc.df$eu],
                  conf.level = 0.95)
 
 ## Is it statistically significant?
-t_test$p.value < 0.05
+t_test$p.value < 0.05 # Yes, it is statistically significant (p < 0.05)
 
 ## t-test
 t_test
@@ -543,11 +547,22 @@ m0 <- lm(growth ~ total_dependency_ratio_mean +
 m0 %>%
   glance()
 
+m0 %>%
+  augment()
+
 ### Visualize the model metrics
 autoplot(m0,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+#### Findings: 
+#### Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
+#### curve, it is almost horizontal
+#### Q-Q: Residuals have a S-like distribution
+#### Scale-location: The data looks heteroskedastic since the line is horizontal
+#### and shows a steep angle in the right end. The residuals began to spread
+#### wider as it passes 1 on the x-axis
 
 ### RSE = 0.5604 on 25 DoF
 ### Multiple R^2 = 0.5622
@@ -578,11 +593,21 @@ m1 <- lm(growth ~ oil_production_per_cap_mean +
 m1 %>%
   glance()
 
+m1 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m1,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+##### Findings: 
+##### Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
+##### curve, it is almost horizontal.
+##### Q-Q: Residuals have a S-like distribution
+##### Scale-location: Heteroskedasticity is still present but it is smaller in
+##### comparison to m0
 
 ### RSE = 0.5508 on 26 DoF
 ### Multiple R^2 = 0.5601
@@ -607,12 +632,20 @@ m2 <- lm(growth ~ oil_production_per_cap_mean +
 m2 %>%
   glance()
 
+m2 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m2,
          which = 1:3,
          nrow = 3,
          ncol = 1)
 
+##### Findings:
+##### Residuals versus fitted: Although observation 3, 4, 36 slightly distort
+##### the curve, it is almost horizontal.
+##### Q-Q: Residuals still have a S-like distribution
+##### Scale-location: The data is less heteroskedastic than the previous models 
 
 ### RSE = 0.5421 on 27 DoF
 ### Multiple R^2 = 0.5577
@@ -635,12 +668,21 @@ m3 <- lm(growth ~ oil_production_per_cap_mean +
 m3 %>%
   glance()
 
+m3 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m3,
          which = 1:3,
          nrow = 3,
          ncol = 1)
 
+##### Findings:
+##### Residuals versus fitted: The line has a steep angle before 0.0 on the
+##### axis. We can say that this model is inferior to the previous models
+##### Q-Q: It has a more prominent S-shape than the previous ones
+##### Scale-location: This is the least homoskedastic model we have examined
+##### so far
 
 ### RSE = 0.5351 on 28 DoF
 ### Multiple R^2 = 0.553
@@ -663,12 +705,23 @@ m4 <- lm(growth ~ oil_production_per_cap_mean +
 m4 %>%
   glance()
 
+m4 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m4,
          which = 1:3,
          nrow = 3,
          ncol = 1)
 
+##### Findings:
+##### Residuals versus fitted: The distortion before the 0 on the x-axis is
+##### increased
+##### Q-Q: The standardized residual still constitute an S-shape. However,
+##### the data between the 1st and the 2nd quartiles follow a more normal
+##### distribution than m7
+##### Scale-location: The line is relatively horizontal between 0 and 1 on the
+##### is horizontal. However, the data is very heteroskedastic
 
 ### RSE = 0.531 on 29 DoF
 ### Multiple R^2 = 0.5441
@@ -693,12 +746,19 @@ m5 <- lm(growth ~ oil_production_per_cap_mean +
 m5 %>%
   glance()
 
+m5 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m5,
          which = 1:3,
          nrow = 3,
          ncol = 1)
 
+##### Findings:
+##### Residuals versus fitted:
+##### Q-Q:
+##### Scale-location:
 
 ### RSE = 0.526 on 30 DoF
 ### Multiple R^2 = 0.5371
@@ -718,11 +778,19 @@ m6 <- lm(growth ~ democracy_mean +
 m6 %>%
   glance()
 
+m6 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m6,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+##### Findings:
+##### Residuals versus fitted:
+##### Q-Q:
+##### Scale-location:
 
 ### RSE = 0.5323 on 31 DoF
 ### Multiple R^2 = 0.5102
@@ -745,12 +813,19 @@ m7 <- lm(growth ~ democracy_mean *
 m7 %>%
   glance()
 
+m7 %>%
+  augment()
+
 ##### Visualize the model metrics
 autoplot(m7,
          which = 1:3,
          nrow = 3,
          ncol = 1)
 
+##### Findings:
+##### Residuals versus fitted:
+##### Q-Q:
+##### Scale-location:
 
 ### RSE = 0.421 on 30 DoF
 ### Multiple R^2 = 0.7035
@@ -776,6 +851,9 @@ m8 <- lm(growth ~ democracy_mean *
 m8 %>%
   glance()
 
+m8 %>%
+  augment()
+
 
 
 ### RSE = 0.2017 on 27 DoF
@@ -790,9 +868,10 @@ autoplot(m8,
          nrow = 3,
          ncol = 1)
 
-## Q-Q plot
-qqnorm(m8$residuals)
-qqline(m8$residuals) # Seems to be normally distributed
+##### Findings:
+##### Residuals versus fitted:
+##### Q-Q:
+##### Scale-location:
 
 ## Shapiro-Wilk test
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
@@ -833,4 +912,3 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
