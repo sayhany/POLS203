@@ -1036,7 +1036,7 @@ m10 <- lm(formula = growth ~ total_dependency_ratio_mean + oil_production_per_ca
     democracy_mean + time_req_to_start_business_mean + real_GDP_per_cap_2004, 
    data = forest_tibble_2)
 
-m10_glance <- m11 %>%
+m10_glance <- m10 %>%
   glance()
 
 # Visualize the model metrics
@@ -1055,3 +1055,4 @@ vif(m10)
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
