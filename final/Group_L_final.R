@@ -19,10 +19,10 @@
 #---------------------------------------------------------------#
 #   Research question: What is the relationship between EU
 # membership and GDP per capita growth during the period
-# 2004 - 2014
+# 2004 - 2014?
 #   Strategy: We first subsetted the former Eastern Bloc
 # countries and divided them into two groups according to whether
-# they did join the EU in 2004, as many of them did.
+# they joined the EU in 2004, as many of them did.
 #             We omitted some countries either because they
 # joined the union later or they underwent some major economic
 # crises during the specified period. The we proceeded to compare
@@ -569,7 +569,7 @@ m0_augment <- m0 %>%
 
 # Cook's distance
 cooks.distance(m0)
-# Findings: We used Cook’s distance, find outliers that would distort our  
+# Findings: We used Cook’s distance to find outliers that would distort our  
 # regression model. Norway has a distance of 19.19, highest recorded. 
 # This observation would negatively affect our model significantly.
 
@@ -1055,4 +1055,27 @@ vif(m10)
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+## We have tested several different independent variables to see their implications
+## on GDP growth of Eastern Bloc countries during the 2004-2014 period.
 
+## We decided to use mo10 as our final model. 
+##Our regression equation for m10 is:
+##y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + ( -0.000014419) *  real_GDP_per_cap_2004 + 2.823458000   
+## Therefore we can say:
+## 1 unit increase in Total Dependency Ratio is associated with a 0.026034479 decrease in GDP growth.
+## 1 unit increase in Oil Production per Capita is associated with a 0.000001980 increase in GDP growth.
+## 1 unit increase in Democracy is associated with a 1.019645719 decrease in GDP growth.
+## 1 unit increase in Time Required to Start a Business is associated with a 0.005230104 decrease in GDP growth.
+## 1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419 decrease in GDP growth.
+
+#           By far the most important determinant for GDP growth observed here 
+# is Democracy. Democracy score has a strong and negative effect on GDP per capita
+# growth between 2004 and 2014.We think this could be due to democratic countries 
+# already enjoying a high GDP and their growth being limited by the law marginal benefit.
+ 
+#           We want to conclude by some policy recommendations we would make.
+##Allowing immigration of young workers to reduce Total Dependency Ratio
+##Increasing fertility rates through better healthcare systems to battle aging countries,
+#and reduce Total Dependency Ratio
+##Decreasing time required  to start a business to increase GDP growth
+##Producing more Oil per capita
