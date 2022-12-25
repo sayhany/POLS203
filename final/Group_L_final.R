@@ -17,15 +17,15 @@
 ## files. You can examine the R script used for that purpose from:
 ## https://github.com/sayhany/POLS203/blob/main/final/merge_datasets.R
 #---------------------------------------------------------------#
-#   Research question: What is the relationship between EU
+#   Research question: What is the relationship between the EU
 # membership and GDP per capita growth during the period
 # 2004 - 2014?
 #   Strategy: We first subsetted the former Eastern Bloc
 # countries and divided them into two groups according to whether
 # they joined the EU in 2004, as many of them did.
 #             We omitted some countries either because they
-# joined the union later or they underwent some major economic
-# crises during the specified period. The we proceeded to compare
+# joined the union later or underwent some major economic
+# crises during the specified period. Then we proceeded to compare
 # their mean values of growth and applied a t-test in order to
 # test the hypothesis and calculate a confidence interval.
 #             In the second part of the project, we extended
@@ -70,8 +70,8 @@ library(car) # For vif
 if (!require(corrplot)) install.packages('corrplot')
 library(corrplot) # For plotting correlation matrices
 
-if (!require(plot3D)) install.packages('plot3D')
-library(plot3D) # Three-dimensional plots
+# Reset the plot pane
+dev.off()
 
 # Disable scientific notation
 options(scipen = 999)
@@ -297,8 +297,8 @@ summary(pols_203_joined)
 # Discussion: Some columns have N/As
 # We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have 
 # too many missing values
-# However, we will fill the few other values that are missing just for 2004 
-# by using imputation (from the Chapter 16 of the textbook, Statistical Methods 
+# However, we will fill in the few other values that are missing just for 2004 
+# by using imputation (from Chapter 16 of the textbook, Statistical Methods 
 #                      for the Social Science by Alan Agresti)
 # Because, if we strictly avoid all the data that contains some missing values
 # we will not be able to consider various IVs and if we delete the country rows
@@ -339,7 +339,7 @@ plot(pols_203_joined$time_req_to_start_business_2014, pols_203_joined$time_req_t
 
 ### Imputation by linear regression is not justified
 
-# We decided to fill the remaining missing values by using a non-parametric
+# We decided to fill in the remaining missing values by using a non-parametric
 # algorithm called "randomForest"
 ## Prepare the dataset for imputation
 pols_203_joined_4_imp <- dplyr::select(pols_203_joined, -c("country", "eu"))
@@ -394,9 +394,9 @@ forest_tibble <- forest_tibble %>%
 ##                III. First part of the project                ::
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-# In our first project we tried to answer the question whether former Eastern 
+# In our first project, we tried to answer the question of whether former Eastern 
 # Bloc countries that joined the EU in 2004 enjoyed higher GDP PPP per capita
-# growth rates? We will briefly replicate what we did back then as the first
+# growth rates. We will briefly replicate what we did back then as the first
 # part of this project. However, this time we will use the data retrieved
 # from Our World in Data website instead of World Bank DataBank.
 
@@ -497,7 +497,7 @@ t_test
 ##  Findings: Mean growth rate of the former Eastern Bloc countries that
 ## joined the EU is significantly higher for the specified period (2004-2014)
 ##  In the second part of the project, we will attempt to answer the question
-## whether we can explain GDP PPP per capita growth by EU membership
+## of whether we can explain GDP PPP per capita growth by EU membership
 
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                IV. Second part of the project                ::
@@ -519,7 +519,7 @@ boxplot(forest_tibble$electricity_per_cap_mean)$stats
 boxplot(forest_tibble$time_req_to_start_business_mean)
 boxplot(forest_tibble$tourists_per_cap_mean)
 
-## We have several outliers. However we decided not to remove them yet
+## We have several outliers. However, we decided not to remove them yet
 ## since we want to avoid overfitting
 
 ##----------------------------------------------------------------
@@ -534,20 +534,20 @@ corrplot(cor_matrix,
          tl.cex = 0.75)
 
 # Findings: Real GDP per capita is positively correlated with total dependency
-# ratio, democracy and electricity generation per capita. Therefore an increase 
+# ratio, democracy, and electricity generation per capita. Therefore an increase 
 # in one of these measures would correspond to an increase in the real GDP per 
 # capita.
 #           Real GDP per capita is negatively correlated with growth and the 
-# time required to start a business. As time required to start a business 
-# increases Real GDP per capita is negatively affected.
-#           Total dependency ratio is negatively correlated with time required 
-# to start a business. A longer time required to start a business is related to
-# a lower total age dependency ratio.
+# time required to start a business. As the time required to start a business 
+# increases Real GDP per capita tend to decrease.
+#           The total dependency ratio is negatively correlated with the time
+# required to start a business. A longer time required to start a business is
+# related to a lower total age dependency ratio.
 #           Democracy score is strongly and negatively correlated with real GDP
-# per capita growth between 2004 and 2014.We think this could be due to 
+# per capita growth between 2004 and 2014. We think this could be due to 
 # democratic countries already enjoying a high GDP and their growth is affected 
-# by the law marginal benefit. Countries with higher democracy scores have a 
-# positivecorrelation with Real GDP but a strong and negative one with growth.
+# by the law of marginal benefit. Countries with higher democracy scores have a 
+# positive correlation with Real GDP but a strong and negative one with growth.
 
 ## All possible pairs
 pairs(forest_tibble[, 2:27])
@@ -564,7 +564,7 @@ m0 <- lm(growth ~ total_dependency_ratio_mean +
            eu, data = forest_tibble)
 
 ## Model metrics
-m0 %>%
+summary(m0) %>%
   glance()
 
 m0_augment <- m0 %>%
@@ -573,7 +573,7 @@ m0_augment <- m0 %>%
 # Cook's distance
 cooks.distance(m0)
 # Findings: We used Cook’s distance to find outliers that would distort our  
-# regression model. Norway has a distance of 19.19, highest recorded. 
+# regression model. Norway has a distance of 19.19, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ### Visualize the model metrics
@@ -583,14 +583,14 @@ autoplot(m0,
          ncol = 1)
 
 # Breusch-Pagan test
-bptest(m6)$p.value < 0.05 # We can reject the homoskedasticity
+bptest(m0)$p.value < 0.05 # We can reject the homoskedasticity
 
 #### Findings: 
-#### Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
-#### curve, it is almost horizontal
-#### Q-Q: Residuals have a S-like distribution
+#### Residuals versus fitted: Although observations 3, 4, and 36 slightly
+#### distort the curve, it is almost horizontal
+#### Q-Q: Residuals have an S-like distribution
 #### Scale-location: The data looks heteroskedastic since the line is horizontal
-#### and shows a steep angle in the right end. The residuals began to spread
+#### and shows a steep angle at the right end. The residuals begin to spread
 #### wider as it passes 1 on the x-axis
 #### The independent variables explain 0.422 = 42.2% of the variation in the
 #### dependent variable
@@ -626,8 +626,8 @@ m1_glance <- m1 %>%
 
 m1_glance$r.squared ### Multiple R^2 = 0.5601
 m1_glance$adj.r.squared # Adjusted R^2 = 0.4417 
-m1_glance$sigma # RSE 0.5517017
-m1_glance$statistic # F-statistic = 4.703118
+m1_glance$sigma # RSE 0.5508327
+m1_glance$statistic # F-statistic = 4.729696
 m1_glance$p.value ### p-value = 0.001565 < 0.05
 m1_glance$AIC # Akaike Information Criterion
 
@@ -636,8 +636,8 @@ m1 %>%
 
 # Cook's distance
 cooks.distance(m1)
-# Findings: We used Cook’s distance, find outliers that would distort our  
-# regression model. Norway has a distance of 22.13, highest recorded. 
+# Findings: We used Cook’s distance to find outliers that would distort our  
+# regression model. Norway has a distance of 22.13, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
@@ -688,8 +688,8 @@ m2 %>%
 
 # Cook's distance
 cooks.distance(m2)
-# Findings: We used Cook’s distance, find outliers that would distort our  
-# regression model. Norway has a distance of 25.35, highest recorded. 
+# Findings: We used Cook’s distance to find outliers that would distort our  
+# regression model. Norway has a distance of 25.35, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
@@ -735,8 +735,8 @@ m3 %>%
 
 # Cook's distance
 cooks.distance(m3)
-# Findings: We used Cook’s distance, find outliers that would distort our  
-# regression model. Norway has a distance of 31.07, highest recorded. 
+# Findings: We used Cook’s distance to find outliers that would distort our  
+# regression model. Norway has a distance of 31.07, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
@@ -784,8 +784,8 @@ m4 %>%
 
 # Cook's distance
 cooks.distance(m4)
-# Findings: We used Cook’s distance, find outliers that would distort our  
-# regression model. Norway has a distance of 37.42, highest recorded. 
+# Findings: We used Cook’s distance to find outliers that would distort our  
+# regression model. Norway has a distance of 37.42, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
@@ -801,8 +801,8 @@ bptest(m4)$p.value < 0.05 # We can reject the homoskedasticity
 ##### Residuals versus fitted: The distortion before the 0 on the x-axis is
 ##### increased
 ##### Q-Q: The standardized residual still constitute an S-shape. However,
-##### the data between the 1st and the 2nd quartiles follow a more normal
-##### distribution than m3
+##### the residuals between the 1st and the 2nd quartiles follow a more normal
+##### distribution than those of m3
 ##### Scale-location: The line is relatively horizontal between 0 and 1 on the
 ##### is horizontal. However, the data is still very heteroskedastic
 #### The independent variables explain 0.4812  = 48.12% of the variation in the
@@ -813,7 +813,7 @@ bptest(m4)$p.value < 0.05 # We can reject the homoskedasticity
 vif(m4) # There is moderate (VIF < 5) correlation between the IVs
 
 ### Apparently, we can explain the growth without using the EU membership data
-### This finding refutes what we did in the first project
+### This finding refutes what we found in our first project
 
 # Remove time_req_to_start_business_mean
 m5 <- lm(growth ~ oil_production_per_cap_mean + 
@@ -837,8 +837,8 @@ m5 %>%
 
 # Cook's distance
 cooks.distance(m5)
-# Findings: We used Cook’s distance, find outliers that would distort our  
-# regression model. Norway has a distance of 48.93, highest recorded. 
+# Findings: We used Cook’s distance to find outliers that would distort our  
+# regression model. Norway has a distance of 48.93, the highest recorded. 
 # This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
@@ -850,14 +850,14 @@ autoplot(m5,
 # Breusch-Pagan test
 bptest(m5)$p.value < 0.05 # We can reject the homoskedasticity
 
-##### Findings:
-##### Residuals versus fitted: The line follows a linear path after the 0.0
-##### point on the x-axis. However, it does not have pattern, which is good
-##### for our assumption of normality.
-##### Q-Q: The standardized residuals are more normal relative to m5.
-##### Scale-location: It is not much different than the m4
-#### The independent variables explain 0.4909  = 49.09% of the variation in the
-#### dependent variable
+## Findings:
+## Residuals versus fitted: The line follows a linear path after the 0.0
+## point on the x-axis. However, it does not have pattern, which is good
+## for our assumption of normality.
+## Q-Q: The standardized residuals are more normal relative to m5.
+## Scale-location: It is not much different than the m4
+## The independent variables explain 0.4909  = 49.09% of the variation in the
+## dependent variable
 
 
 #### Variance inflation factor
@@ -897,16 +897,16 @@ autoplot(m6,
 # Breusch-Pagan test
 bptest(m6)$p.value < 0.05 # We can reject the homoskedasticity
 
-##### Findings:
-##### Residuals versus fitted: There is almost no difference when compared to
-##### the previous model
-##### Q-Q: The standardized residuals are distributed more normally than those
-##### of m5
-##### Scale-location: The distribution of the standardized residuals still
-##### suggest heteroskedasticity which violates our homoskedasticity
-##### assumption
-#### The independent variables explain 0.4786  = 47.86% of the variation in the
-#### dependent variable
+## Findings:
+## Residuals versus fitted: There is almost no difference when compared to
+## the previous model
+## Q-Q: The standardized residuals are distributed more normally than those
+## of m5
+## Scale-location: The distribution of the standardized residuals still
+## suggest heteroskedasticity which violates our homoskedasticity
+## assumption
+## The independent variables explain 0.4786  = 47.86% of the variation in the
+## dependent variable
 
 ### Variance inflation factor
 vif(type= "predictor", # VIF = 1.387538
@@ -934,9 +934,9 @@ m7 %>%
 
 # Cook's distance
 cooks.distance(m7)
-# Findings: We used Cook’s distance, find outliers that would distort our  
+# Findings: We used Cook’s distance to find outliers that would distort our  
 # regression model. Azerbaijan and Belarus have distances of 6.11 and 1.79
-# respectively, highest recorded. These observations would negatively affect
+# respectively, the highest recorded. These observations would negatively affect
 # our model significantly.
 
 ##### Visualize the model metrics
@@ -948,14 +948,14 @@ autoplot(m7,
 # Breusch-Pagan test
 bptest(m7)$p.value < 0.05 # We can reject the homoskedasticity
 
-##### Findings: 
-##### Residuals versus fitted: The line is not horizontal at all
-##### Q-Q: The line that represents standardized residuals is extremely
-##### distorted
-##### Scale-location: The line behaves in a zig-zag pattern and not horizontal
-##### This model has less explanatory power than all of the previous models
-#### The independent variables explain 0.6738  = 67.38% of the variation in the
-#### dependent variable
+## Findings: 
+## Residuals versus fitted: The line is not horizontal at all
+## Q-Q: The line that represents standardized residuals is extremely
+## distorted
+## Scale-location: The line behaves in a zig-zag pattern and not horizontal
+## This model has less explanatory power than all of the previous models
+## The independent variables explain 0.6738  = 67.38% of the variation in the
+## dependent variable
 
 
 ## Shapiro-Wilk test
@@ -998,7 +998,7 @@ bptest(m8)$p.value < 0.05 # We cannot reject the homoskedasticity
 # Cook's distance
 cooks.distance(m8)
 # Findings: No observation has a Cook's distance greater than 1. We interpret
-# that no observation distorts our model significantly.
+# that as no observation distorts our model significantly.
 
 ##### Findings:
 ##### Residuals versus fitted: The line is diagonal before the 0.15 point
@@ -1022,14 +1022,6 @@ shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
 ### y = (-2.57155696) * democracy_mean + (-0.00005586) * real_GDP_per_cap_2004 + (0.00006662) * [democracy_mean * real_GDP_per_cap_2004] + 2.36268371
 
 # Plot the  model
-## 3-dimensional plot
-scatter3D(forest_tibble_2$real_GDP_per_cap_2004,
-          forest_tibble_2$democracy_mean,
-          forest_tibble_2$growth,
-          labels = c("GDP per cap 2004",
-                     "Democracy score",
-                     "Growth 2004-2014"))
-
 ## 2-dimensional plot
 ggplot(forest_tibble_2,
        aes(x = real_GDP_per_cap_2004,
@@ -1091,35 +1083,43 @@ vif(m10)
 ## We have tested several different independent variables to see their implications
 ## on GDP growth of Eastern Bloc countries during the 2004-2014 period.
 
-## We decided to use mo10 as our final model. 
+## We decided to use m10 as our final model. 
 
-# The explanatory variables of our final model are Total Dependency Ratio, 
-#Oil Production per capita, Democracy, Time Required to Start a Business, and 
-#Real GDP per capita in 2004
+# The explanatory variables of our final model are age dependency ratio, 
+# oil production per capita, participatory democracy score, the time required 
+# to start a business, and real GDP per capita in 2004
 
-##Our regression equation for m10 is:
-##y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + ( -0.000014419) *  real_GDP_per_cap_2004 + 2.823458000   
+## Our regression equation for m10 is:
+## y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + ( -0.000014419) *  real_GDP_per_cap_2004 + 2.823458000
+
 ## Therefore we can say:
-## 1 unit increase in Total Dependency Ratio is associated with a 0.026034479 decrease in GDP growth.
-## 1 unit increase in Oil Production per Capita is associated with a 0.000001980 increase in GDP growth.
-## 1 unit increase in Democracy is associated with a 1.019645719 decrease in GDP growth.
-## 1 unit increase in Time Required to Start a Business is associated with a 0.005230104 decrease in GDP growth.
-## 1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419 decrease in GDP growth.
+## 1 unit increase in Total Dependency Ratio is associated with a 0.026034479 
+## decrease in GDP growth.
+## 1 unit increase in Oil Production per Capita is associated with a 0.000001980 
+## increase in GDP growth.
+## 1 unit increase in Democracy is associated with a 1.019645719 decrease in GDP 
+## growth.
+## 1 unit increase in Time Required to Start a Business is associated with a 
+## 0.005230104 decrease in GDP growth.
+## 1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419 
+## decrease in GDP growth.
 
 
-#           By far the most important factor for GDP growth observed here is Democracy
-# Democracy score has a strong and negative effect on GDP per capita growth between
-# 2004 and 2014.We think this could be due to democratic countries already enjoying
-# a high GDP and their growth being limited by the law marginal benefit.
+# By far the most important factor for GDP growth observed here is 
+# participatory democracy. Participatory democracy score has a strong and 
+# negative effect on GDP per capita growth between 2004 and 2014. We think this 
+# could be due to democratic countries already enjoying higher GDP per capita  
+# and their growth being limited by the law of marginal benefit.
 
-#           We want to conclude by reviewing policy implementations countries make.
-##Allowing immigration of young workers to reduce Total Dependency Ratio
-##Increasing fertility rates through better healthcare systems to battle aging, and
-#reduce Total Dependency Ratio
-##Decreasing time required  to start a business to increase GDP growth
-##Producing more Oil per capita
+# We want to conclude by reviewing policy implementations countries make.
+# 1- Allowing immigration of young workers to reduce the age dependency.
+# 2- Increasing fertility rates through better healthcare systems to battle aging,
+# and reduce the age dependency ratio.
+# 3- Decreasing the time required to start a business to increase economic growth
+# 4- Boosting oil production
 
-## There are many effects these policies have on the economy, social welfare, and 
-# many other factors when policymakers are taking decisions. We cannot say with certainty that all of
-# these policies may induce expected results in each case. Further research is needed to come up with
-# case specific policy recommendations.
+# There are many effects these policies have on the economy, social welfare, and 
+# many other factors when policymakers are taking decisions. We cannot say with 
+# certainty that all of these policies may induce expected results in each case
+# since linear regressions do not imply causal relations between variables. 
+# Further research is needed to come up with case-specific policy recommendations.
