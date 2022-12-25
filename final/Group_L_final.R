@@ -521,7 +521,7 @@ plot(m7)
 qqnorm(m7$residuals) + qqline(m7$residuals)
 
 ## Shapiro-Wilk test
-shapiro.test(m7$residuals) # Null-hypothesis: distribution is normal
+shapiro.test(m7$residuals)$p.value < 0.05 # Null-hypothesis: distribution is normal
 stdres(m7)
 ## p-value = 0.0003711
 ## Normality of residuals is rejected
@@ -542,18 +542,21 @@ summary(m8)
 plot(m8)
 
 ## Q-Q plot
-qqnorm(m8$residuals) + qqline(m8$residuals)
+qqnorm(m8$residuals) + qqline(m8$residuals) # Seems to be normally distributed
+
+## Shapiro-Wilk test
+shapiro.test(m8$residuals)$p.value < 0.05 # We cannot reject the null-hypothesis
 
 # Plot the final model
 ## 3-dimensional plot
-scatter3D(forest_tibble$real_GDP_per_cap_2004,
-          forest_tibble$democracy_mean,
-          forest_tibble$growth,
+scatter3D(forest_tibble_2$real_GDP_per_cap_2004,
+          forest_tibble_2$democracy_mean,
+          forest_tibble_2$growth,
           labels = c("GDP per cap 2004",
                      "Democracy score",
                      "Growth 2004-2014"))
 ## 2-dimensional plot
-ggplot(forest_tibble,
+ggplot(forest_tibble_2,
        aes(x = real_GDP_per_cap_2004,
            y = growth,
            color = democracy_mean)) +
@@ -570,3 +573,4 @@ ggplot(forest_tibble,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
