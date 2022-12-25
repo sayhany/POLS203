@@ -716,6 +716,12 @@ m3_glance$p.value # p-value = 0.0002538 < 0.05
 m3 %>%
   augment()
 
+# Cook's distance
+cooks.distance(m3)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 31.07, highest recorded. 
+# This observation would negatively affect our model significantly.
+
 ##### Visualize the model metrics
 autoplot(m3,
          which = 1:3,
@@ -754,6 +760,12 @@ m4_glance$p.value # p-value = 0.0001007 < 0.05
 
 m4 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m4)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 37.42, highest recorded. 
+# This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
 autoplot(m4,
@@ -798,6 +810,12 @@ m5_glance$p.value # p-value = 0.00003229 < 0.05
 m5 %>%
   augment()
 
+# Cook's distance
+cooks.distance(m5)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 48.93, highest recorded. 
+# This observation would negatively affect our model significantly.
+
 ##### Visualize the model metrics
 autoplot(m5,
          which = 1:3,
@@ -833,6 +851,13 @@ m6_glance$p.value # p-value = 0.00001569 < 0.05
 
 m6 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m6)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Azerbaijan and Belarus have distances of 4.35 and 1.39 
+# respectively, highest recorded. These observations would negatively affect
+# our model significantly.
 
 ##### Visualize the model metrics
 autoplot(m6,
@@ -873,6 +898,13 @@ m7_glance$p.value # p-value = 0.0000000458 < 0.05
 
 m7 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m7)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Azerbaijan and Belarus have distances of 6.11 and 1.79
+# respectively, highest recorded. These observations would negatively affect
+# our model significantly.
 
 ##### Visualize the model metrics
 autoplot(m7,
@@ -922,6 +954,11 @@ autoplot(m8,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Cook's distance
+cooks.distance(m8)
+# Findings: No observation has a Cook's distance greater than 1. We interpret
+# that no observation distorts our model significantly.
 
 ##### Findings:
 ##### Residuals versus fitted: The line is diagonal before the 0.15 point
