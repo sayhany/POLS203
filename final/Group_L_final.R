@@ -290,6 +290,7 @@ pols_203_joined <- pols_203_joined %>%
 
 # Summary
 summary(pols_203_joined)
+
 # Discussion: Some columns have N/As
 # We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have 
 # too many missing values
@@ -516,21 +517,37 @@ boxplot(forest_tibble$time_req_to_start_business_mean)
 boxplot(forest_tibble$tourists_per_cap_mean)
 
 ## We have several outliers. However we decided not to remove them yet
-## since we want to avoid overfitting at all costs
+## since we want to avoid overfitting
 
 ##----------------------------------------------------------------
 ##                        Build a model                         --
 ##----------------------------------------------------------------
 
 # Correlation matrix
-cor_matrix <- cor(forest_tibble[, 2:19])
+cor_matrix <- cor(forest_tibble[, c(6, 20:23, 25:27)])
 
 ## Plot the correlation matrix
 corrplot(cor_matrix,
-         tl.cex = 0.5)
+         tl.cex = 0.75)
+
+# Findings: Real GDP per capita is positively correlated with total dependency
+# ratio, democracy and electricity generation per capita. Therefore an increase 
+# in one of these measures would correspond to an increase in the real GDP per 
+# capita.
+#           Real GDP per capita is negatively correlated with growth and the 
+# time required to start a business. As time required to start a business 
+# increases Real GDP per capita is negatively affected.
+#           Total dependency ratio is negatively correlated with time required 
+# to start a business. A longer time required to start a business is related to
+# a lower total age dependency ratio.
+#           Democracy score is strongly and negatively correlated with real GDP
+# per capita growth between 2004 and 2014.We think this could be due to 
+# democratic countries already enjoying a high GDP and their growth is affected 
+# by the law marginal benefit. Countries with higher democracy scores have a 
+# positivecorrelation with Real GDP but a strong and negative one with growth.
 
 ## All possible pairs
-pairs(forest_tibble[, 2:19])
+pairs(forest_tibble[, 2:27])
 
 # The original model
 m0 <- lm(growth ~ total_dependency_ratio_mean +
@@ -933,4 +950,3 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
