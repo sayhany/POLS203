@@ -1073,14 +1073,19 @@ vif(m10)
 ## 1 unit increase in Time Required to Start a Business is associated with a 0.005230104 decrease in GDP growth.
 ## 1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419 decrease in GDP growth.
 
-#           By far the most important determinant for GDP growth observed here 
-# is Democracy. Democracy score has a strong and negative effect on GDP per capita
-# growth between 2004 and 2014.We think this could be due to democratic countries 
-# already enjoying a high GDP and their growth being limited by the law marginal benefit.
+#           By far the most important factor for GDP growth observed here is Democracy
+# Democracy score has a strong and negative effect on GDP per capita growth between
+# 2004 and 2014.We think this could be due to democratic countries already enjoying
+# a high GDP and their growth being limited by the law marginal benefit.
  
-#           We want to conclude by some policy recommendations we would make.
+#           We want to conclude by reviewing policy implementations countries make.
 ##Allowing immigration of young workers to reduce Total Dependency Ratio
-##Increasing fertility rates through better healthcare systems to battle aging countries,
-#and reduce Total Dependency Ratio
+##Increasing fertility rates through better healthcare systems to battle aging, and
+#reduce Total Dependency Ratio
 ##Decreasing time required  to start a business to increase GDP growth
 ##Producing more Oil per capita
+
+## There are many effects these policies have on the economy, wellbeing of citizens, and 
+# many other factors when policymakers are taking decisions. We cannot say with certainty that all of
+# these policies may induce expected results in each case. Further research is needed to come up with
+# case specific policy recommendations.
