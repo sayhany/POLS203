@@ -758,12 +758,6 @@ autoplot(m7,
 ### F-statistic = 23.73 on 3 and 30 DoF
 ### p-value = 0.0000000458 < 0.05
 
-### Plot the Model metrics
-plot(m7)
-
-## Q-Q plot
-qqnorm(m7$residuals) + qqline(m7$residuals)
-
 ## Shapiro-Wilk test
 shapiro.test(m7$residuals)$p.value < 0.05 # Null-hypothesis: distribution is normal
 ## p-value = 0.0003711
