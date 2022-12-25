@@ -586,6 +586,8 @@ autoplot(m0,
 #### Scale-location: The data looks heteroskedastic since the line is horizontal
 #### and shows a steep angle in the right end. The residuals began to spread
 #### wider as it passes 1 on the x-axis
+#### The independent variables explain 0.422 = 42.2% of the variation in the
+#### dependent variable
 
 ### RSE = 0.5604 on 25 DoF
 ### Multiple R^2 = 0.5622
@@ -644,7 +646,8 @@ autoplot(m1,
 ##### Q-Q: Residuals have a S-like distribution
 ##### Scale-location: Heteroskedasticity is still present but it is smaller in
 ##### comparison to m0
-
+#### The independent variables explain 0.4417  = 44.17% of the variation in the
+#### dependent variable
 
 
 
@@ -690,7 +693,9 @@ autoplot(m2,
 ##### Residuals versus fitted: Although observation 3, 4, 36 slightly distort
 ##### the curve, it is almost horizontal.
 ##### Q-Q: Residuals still have a S-like distribution
-##### Scale-location: The data is less heteroskedastic than the previous models 
+##### Scale-location: The data is less heteroskedastic than the previous models
+#### The independent variables explain 0.4594  = 45.94% of the variation in the
+#### dependent variable
 
 #### Variance inflation factor
 vif(m2) # There is moderate (VIF < 5) correlation between the IVs
@@ -734,7 +739,8 @@ autoplot(m3,
 ##### Q-Q: It has a more prominent S-shape than the previous ones
 ##### Scale-location: This is the least homoskedastic model we have examined
 ##### so far
-
+#### The independent variables explain 0.4731  = 47.31% of the variation in the
+#### dependent variable
 
 
 #### Variance inflation factor
@@ -781,7 +787,8 @@ autoplot(m4,
 ##### distribution than m3
 ##### Scale-location: The line is relatively horizontal between 0 and 1 on the
 ##### is horizontal. However, the data is still very heteroskedastic
-
+#### The independent variables explain 0.4812  = 48.12% of the variation in the
+#### dependent variable
 
 
 #### Variance inflation factor
@@ -828,7 +835,8 @@ autoplot(m5,
 ##### for our assumption of normality.
 ##### Q-Q: The standardized residuals are more normal relative to m5.
 ##### Scale-location: It is not much different than the m4
-
+#### The independent variables explain 0.4909  = 49.09% of the variation in the
+#### dependent variable
 
 
 #### Variance inflation factor
@@ -873,7 +881,8 @@ autoplot(m6,
 ##### Scale-location: The distribution of the standardized residuals still
 ##### suggest heteroskedasticity which violates our homoskedasticity
 ##### assumption
-
+#### The independent variables explain 0.4786  = 47.86% of the variation in the
+#### dependent variable
 
 ### Variance inflation factor
 vif(type= "predictor", # VIF = 1.387538
@@ -918,7 +927,8 @@ autoplot(m7,
 ##### distorted
 ##### Scale-location: The line behaves in a zig-zag pattern and not horizontal
 ##### This model has less explanatory power than all of the previous models
-
+#### The independent variables explain 0.6738  = 67.38% of the variation in the
+#### dependent variable
 
 
 ## Shapiro-Wilk test
@@ -940,10 +950,10 @@ m8_glance <- m8 %>%
   glance()
 
 m8_glance$sigma # RSE = 0.2017 on 27 DoF
-m7_glance$r.squared # Multiple R^2 = 0.7034933
-m7_glance$adj.r.squared # Adjusted R^2 = 0.6738427 
-m7_glance$statistic # F-statistic = 16.44 on 3 and 27 DoF
-m7_glance$p.value # p-value = 0.000002819 < 0.05
+m8_glance$r.squared # Multiple R^2 = 0.7034933
+m8_glance$adj.r.squared # Adjusted R^2 = 0.6738427 
+m8_glance$statistic # F-statistic = 16.44 on 3 and 27 DoF
+m8_glance$p.value # p-value = 0.000002819 < 0.05
 
 m8 %>%
   augment()
@@ -966,6 +976,8 @@ cooks.distance(m8)
 ##### Q-Q: The standardized residuals are distributed normally
 ##### Scale-location: Although the line has several curves, it is more
 ##### horizontal than the previous model
+#### The independent variables explain 0.6738  = 67.38% of the variation in the
+#### dependent variable
 
 ## Shapiro-Wilk test
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
@@ -979,7 +991,7 @@ shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
 
 ### y = (-2.57155696) * democracy_mean + (-0.00005586) * real_GDP_per_cap_2004 + (0.00006662) * [democracy_mean * real_GDP_per_cap_2004] + 2.36268371
 
-# Plot the final model
+# Plot the  model
 ## 3-dimensional plot
 scatter3D(forest_tibble_2$real_GDP_per_cap_2004,
           forest_tibble_2$democracy_mean,
@@ -1003,7 +1015,43 @@ ggplot(forest_tibble_2,
   ggtitle("Our final linear model") +
   labs(caption = "Source: Our World in Data")
 
+### However, in this model real_GDP_per_cap_2004 has a very low significance.
+### Thus, we will start again with the outliers removed
+m9 <- lm(growth ~ total_dependency_ratio_mean +
+            oil_production_per_cap_mean + 
+            democracy_mean +
+            oil_production_per_cap_mean +
+            electricity_per_cap_mean +
+            time_req_to_start_business_mean +
+            tourists_per_cap_mean +
+            real_GDP_per_cap_2004 +
+            eu, data = forest_tibble_2)
+
+# Call stepAIC again
+aic2 <- stepAIC(m9)
+aic2
+
+# The real final model
+m10 <- lm(formula = growth ~ total_dependency_ratio_mean + oil_production_per_cap_mean + 
+    democracy_mean + time_req_to_start_business_mean + real_GDP_per_cap_2004, 
+   data = forest_tibble_2)
+
+m10_glance <- m11 %>%
+  glance()
+
+# Visualize the model metrics
+autoplot(m10,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
+# Summarize
+summary(m10)
+
+# Variance inflation factors
+vif(m10)
+
+
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
