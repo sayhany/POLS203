@@ -1059,6 +1059,11 @@ vif(m10)
 ## on GDP growth of Eastern Bloc countries during the 2004-2014 period.
 
 ## We decided to use mo10 as our final model. 
+
+# The explanatory variables of our final model are Total Dependency Ratio, 
+#Oil Production per capita, Democracy, Time Required to Start a Business, and 
+#Real GDP per capita in 2004
+
 ##Our regression equation for m10 is:
 ##y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + ( -0.000014419) *  real_GDP_per_cap_2004 + 2.823458000   
 ## Therefore we can say:
