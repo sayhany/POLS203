@@ -730,7 +730,10 @@ qqnorm(m8$residuals) + qqline(m8$residuals) # Seems to be normally distributed
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
                                           # We cannot reject the null-hypothesis
 
-### We can say that the residuals are normally distributed
+### We can say that the residuals are normally distributed unlike the previous
+### model
+
+### y = (-2.57155696) * democracy_mean + (-0.00005586) * real_GDP_per_cap_2004 + (0.00006662) * [democracy_mean * real_GDP_per_cap_2004] + 2.36268371
 
 # Plot the final model
 ## 3-dimensional plot
@@ -759,4 +762,3 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
