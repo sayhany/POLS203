@@ -677,7 +677,7 @@ m2 <- lm(growth ~ oil_production_per_cap_mean +
 m2_glance <- m2 %>%
   glance()
 
-m2_glance$r.squared # R^2 = 0.5577038
+m2_glance$r.squared # Multiple R^2 = 0.5577038
 m2_glance$adj.r.squared # Adjusted R^2 = 0.4594 
 m2_glance$sigma # RSE = 0.5420223  on 27 DoF
 m2_glance$statistic # F-statistic = 5.673 on 6 and 27 DoF
