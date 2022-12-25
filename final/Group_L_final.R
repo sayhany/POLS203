@@ -564,8 +564,14 @@ m0 <- lm(growth ~ total_dependency_ratio_mean +
 m0 %>%
   glance()
 
-m0 %>%
+m0_augment <- m0 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m0)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 19.19, highest recorded. 
+# This observation would negatively affect our model significantly.
 
 ### Visualize the model metrics
 autoplot(m0,
@@ -609,6 +615,7 @@ m1 <- lm(growth ~ oil_production_per_cap_mean +
 #### Model metrics
 m1_glance <- m1 %>%
   glance()
+
 m1_glance$r.squared ### Multiple R^2 = 0.5601
 m1_glance$adj.r.squared # Adjusted R^2 = 0.4417 
 m1_glance$sigma # RSE 0.5517017
@@ -618,6 +625,12 @@ m1_glance$AIC # Akaike Information Criterion
 
 m1 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m1)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 22.13, highest recorded. 
+# This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
 autoplot(m1,
@@ -660,6 +673,12 @@ m2_glance$p.value # p-value = 0.0006433 < 0.05
 
 m2 %>%
   augment()
+
+# Cook's distance
+cooks.distance(m2)
+# Findings: We used Cook’s distance, find outliers that would distort our  
+# regression model. Norway has a distance of 25.35, highest recorded. 
+# This observation would negatively affect our model significantly.
 
 ##### Visualize the model metrics
 autoplot(m2,
@@ -950,3 +969,4 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
