@@ -719,9 +719,9 @@ autoplot(m4,
 ##### increased
 ##### Q-Q: The standardized residual still constitute an S-shape. However,
 ##### the data between the 1st and the 2nd quartiles follow a more normal
-##### distribution than m7
+##### distribution than m3
 ##### Scale-location: The line is relatively horizontal between 0 and 1 on the
-##### is horizontal. However, the data is very heteroskedastic
+##### is horizontal. However, the data is still very heteroskedastic
 
 ### RSE = 0.531 on 29 DoF
 ### Multiple R^2 = 0.5441
@@ -756,9 +756,11 @@ autoplot(m5,
          ncol = 1)
 
 ##### Findings:
-##### Residuals versus fitted:
-##### Q-Q:
-##### Scale-location:
+##### Residuals versus fitted: The line follows a linear path after the 0.0
+##### point on the x-axis. However, it does not have pattern, which is good
+##### for our assumption of normality.
+##### Q-Q: The standardized residuals are more normal relative to m5.
+##### Scale-location: It is not much different than the m4
 
 ### RSE = 0.526 on 30 DoF
 ### Multiple R^2 = 0.5371
@@ -788,9 +790,13 @@ autoplot(m6,
          ncol = 1)
 
 ##### Findings:
-##### Residuals versus fitted:
-##### Q-Q:
-##### Scale-location:
+##### Residuals versus fitted: There is almost no difference when compared to
+##### the previous model
+##### Q-Q: The standardized residuals are distributed more normally than those
+##### of m5
+##### Scale-location: The distribution of the standardized residuals still
+##### suggest heteroskedasticity which violates our homoskedasticity
+##### assumption
 
 ### RSE = 0.5323 on 31 DoF
 ### Multiple R^2 = 0.5102
@@ -822,10 +828,12 @@ autoplot(m7,
          nrow = 3,
          ncol = 1)
 
-##### Findings:
-##### Residuals versus fitted:
-##### Q-Q:
-##### Scale-location:
+##### Findings: 
+##### Residuals versus fitted: The line is not horizontal at all
+##### Q-Q: The line that represents standardized residuals is extremely
+##### distorted
+##### Scale-location: The line behaves in a zig-zag pattern and not horizontal
+##### This model has less explanatory power than all of the previous models
 
 ### RSE = 0.421 on 30 DoF
 ### Multiple R^2 = 0.7035
@@ -869,9 +877,11 @@ autoplot(m8,
          ncol = 1)
 
 ##### Findings:
-##### Residuals versus fitted:
-##### Q-Q:
-##### Scale-location:
+##### Residuals versus fitted: The line is diagonal before the 0.15 point
+##### on the x-axis yet it is more horizontal when compared to m7
+##### Q-Q: The standardized residuals are distributed normally
+##### Scale-location: Although the line has several curves, it is more
+##### horizontal than the previous model
 
 ## Shapiro-Wilk test
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
