@@ -31,7 +31,7 @@
 #             In the second part of the project, we extended
 # our sample to all European countries and added many new
 # independent variables. We built several models with differing
-# numbers of IVs, then, we described their diagnostics and 
+# numbers of IVs, then, we described their Model metrics and 
 # compared them according to their Akaike information to
 # ultimately decide which model we are going to choose. The most
 # important question to answer was whether the best model will 
@@ -45,6 +45,12 @@ library(tidyverse)
 
 if (!require(ggthemes)) install.packages('ggthemes')
 library(ggthemes) # Themes for ggplot2
+
+if (!require(broom)) install.packages('broom')
+library(broom) # Extracting model metrics
+
+if (!require(ggfortify)) install.packages('ggfortify')
+library(ggfortify) # Visualizing model metrics
 
 if (!require(MASS)) install.packages('MASS')
 library(MASS) # For stepAIC
@@ -533,8 +539,15 @@ m0 <- lm(growth ~ total_dependency_ratio_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-## Diagnostics
-summary(m0)
+## Model metrics
+m0 %>%
+  glance()
+
+### Visualize the model metrics
+autoplot(m0,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
 
 ### RSE = 0.5604 on 25 DoF
 ### Multiple R^2 = 0.5622
@@ -561,8 +574,15 @@ m1 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-#### Diagnostics
-summary(m1)
+#### Model metrics
+m1 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m1,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
 
 ### RSE = 0.5508 on 26 DoF
 ### Multiple R^2 = 0.5601
@@ -583,8 +603,16 @@ m2 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-#### Diagnostics
-summary(m2)
+#### Model metrics
+m2 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m2,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.5421 on 27 DoF
 ### Multiple R^2 = 0.5577
@@ -603,8 +631,16 @@ m3 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004 +
            eu, data = forest_tibble)
 
-#### Diagnostics
-summary(m3)
+#### Model metrics
+m3 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m3,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.5351 on 28 DoF
 ### Multiple R^2 = 0.553
@@ -623,8 +659,16 @@ m4 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004,
          data = forest_tibble)
 
-#### Diagnostics
-summary(m4)
+#### Model metrics
+m4 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m4,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.531 on 29 DoF
 ### Multiple R^2 = 0.5441
@@ -645,8 +689,16 @@ m5 <- lm(growth ~ oil_production_per_cap_mean +
            real_GDP_per_cap_2004,
          data = forest_tibble)
 
-## Diagnostics
-summary(m5)
+#### Model metrics
+m5 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m5,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.526 on 30 DoF
 ### Multiple R^2 = 0.5371
@@ -662,8 +714,15 @@ m6 <- lm(growth ~ democracy_mean +
            real_GDP_per_cap_2004,
          data = forest_tibble)
 
-## Diagnostics
-summary(m6)
+#### Model metrics
+m6 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m6,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
 
 ### RSE = 0.5323 on 31 DoF
 ### Multiple R^2 = 0.5102
@@ -682,8 +741,16 @@ m7 <- lm(growth ~ democracy_mean *
            real_GDP_per_cap_2004,
          data = forest_tibble)
 
-### Diagnostics
-summary(m7)
+#### Model metrics
+m7 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m7,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.421 on 30 DoF
 ### Multiple R^2 = 0.7035
@@ -691,7 +758,7 @@ summary(m7)
 ### F-statistic = 23.73 on 3 and 30 DoF
 ### p-value = 0.0000000458 < 0.05
 
-### Plot the diagnostics
+### Plot the Model metrics
 plot(m7)
 
 ## Q-Q plot
@@ -711,8 +778,16 @@ m8 <- lm(growth ~ democracy_mean *
            real_GDP_per_cap_2004,
          data = forest_tibble_2)
 
-### Diagnostics
-summary(m8)
+#### Model metrics
+m8 %>%
+  glance()
+
+##### Visualize the model metrics
+autoplot(m8,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
+
 
 ### RSE = 0.2017 on 27 DoF
 ### Multiple R^2 = 0.6462
@@ -720,7 +795,7 @@ summary(m8)
 ### F-statistic = 16.44 on 3 and 27 DoF
 ### p-value = 0.000002819 < 0.05
 
-### Plot the diagnostics
+### Plot the Model metrics
 plot(m8)
 
 ## Q-Q plot
@@ -732,6 +807,9 @@ shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
 
 ### We can say that the residuals are normally distributed unlike the previous
 ### model
+
+### Although its R^2 is smaller when compared to the previous model, this model
+### has the advantage of normally distributed residuals.
 
 ### y = (-2.57155696) * democracy_mean + (-0.00005586) * real_GDP_per_cap_2004 + (0.00006662) * [democracy_mean * real_GDP_per_cap_2004] + 2.36268371
 
