@@ -791,7 +791,8 @@ autoplot(m8,
          ncol = 1)
 
 ## Q-Q plot
-qqnorm(m8$residuals) + qqline(m8$residuals) # Seems to be normally distributed
+qqnorm(m8$residuals)
+qqline(m8$residuals) # Seems to be normally distributed
 
 ## Shapiro-Wilk test
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
@@ -832,3 +833,4 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
