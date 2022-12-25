@@ -590,8 +590,14 @@ m1 <- lm(growth ~ oil_production_per_cap_mean +
            eu, data = forest_tibble)
 
 #### Model metrics
-m1 %>%
+m1_glance <- m1 %>%
   glance()
+m1_glance$r.squared ### Multiple R^2 = 0.5601
+m1_glance$adj.r.squared # Adjusted R^2 = 0.4417 
+m1_glance$sigma # RSE 0.5517017
+m1_glance$statistic # F-statistic = 4.703118
+m1_glance$p.value ### p-value = 0.001565 < 0.05
+m1_glance$AIC # Akaike Information Criterion
 
 m1 %>%
   augment()
@@ -609,11 +615,8 @@ autoplot(m1,
 ##### Scale-location: Heteroskedasticity is still present but it is smaller in
 ##### comparison to m0
 
-### RSE = 0.5508 on 26 DoF
-### Multiple R^2 = 0.5601
-### Adjusted R^2 = 0.4417 
-### F-statistic = 4.73 on 7 and 26 DoF
-### p-value = 0.001565 < 0.05
+
+
 
 #### Variance inflation factor
 
@@ -629,8 +632,14 @@ m2 <- lm(growth ~ oil_production_per_cap_mean +
            eu, data = forest_tibble)
 
 #### Model metrics
-m2 %>%
+m2_glance <- m2 %>%
   glance()
+
+m2_glance$r.squared # R^2 = 0.5577038
+m2_glance$adj.r.squared # Adjusted R^2 = 0.4594 
+m2_glance$sigma # RSE = 0.5420223  on 27 DoF
+m2_glance$statistic # F-statistic = 5.673 on 6 and 27 DoF
+m2_glance$p.value # p-value = 0.0006433 < 0.05
 
 m2 %>%
   augment()
@@ -647,12 +656,6 @@ autoplot(m2,
 ##### Q-Q: Residuals still have a S-like distribution
 ##### Scale-location: The data is less heteroskedastic than the previous models 
 
-### RSE = 0.5421 on 27 DoF
-### Multiple R^2 = 0.5577
-### Adjusted R^2 = 0.4594 
-### F-statistic = 5.673 on 6 and 27 DoF
-### p-value = 0.0006433 < 0.05
-
 #### Variance inflation factor
 vif(m2) # There is moderate (VIF < 5) correlation between the IVs
 
@@ -665,8 +668,14 @@ m3 <- lm(growth ~ oil_production_per_cap_mean +
            eu, data = forest_tibble)
 
 #### Model metrics
-m3 %>%
+m3_glance <- m3 %>%
   glance()
+
+m3_glance$sigma # RSE = 0.535176 on 28 DoF
+m3_glance$r.squared # Multiple R^2 = 0.553
+m3_glance$adj.r.squared # Adjusted m^2 = 0.4731 
+m3_glance$statistic # F-statistic = 6.927 on 5 and 28 DoF
+m3_glance$p.value # p-value = 0.0002538 < 0.05
 
 m3 %>%
   augment()
@@ -684,11 +693,7 @@ autoplot(m3,
 ##### Scale-location: This is the least homoskedastic model we have examined
 ##### so far
 
-### RSE = 0.5351 on 28 DoF
-### Multiple R^2 = 0.553
-### Adjusted R^2 = 0.4731 
-### F-statistic = 6.927 on 5 and 28 DoF
-### p-value = 0.0002538 < 0.05
+
 
 #### Variance inflation factor
 vif(m3) # There is moderate (VIF < 5) correlation between the IVs
@@ -702,8 +707,14 @@ m4 <- lm(growth ~ oil_production_per_cap_mean +
          data = forest_tibble)
 
 #### Model metrics
-m4 %>%
+m4_glance <- m4 %>%
   glance()
+
+m4_glance$sigma # RSE = 0.531 on 29 DoF
+m4_glance$r.squared # Multiple R^2 = 0.5441
+m4_glance$adj.r.squared # Adjusted R^2 = 0.4812 
+m4_glance$statistic # F-statistic = 8.651 on 4 and 29 DoF
+m4_glance$p.value # p-value = 0.0001007 < 0.05
 
 m4 %>%
   augment()
@@ -723,11 +734,7 @@ autoplot(m4,
 ##### Scale-location: The line is relatively horizontal between 0 and 1 on the
 ##### is horizontal. However, the data is still very heteroskedastic
 
-### RSE = 0.531 on 29 DoF
-### Multiple R^2 = 0.5441
-### Adjusted R^2 = 0.4812 
-### F-statistic = 8.651 on 4 and 29 DoF
-### p-value = 0.0001007 < 0.05
+
 
 #### Variance inflation factor
 vif(m4) # There is moderate (VIF < 5) correlation between the IVs
@@ -743,8 +750,14 @@ m5 <- lm(growth ~ oil_production_per_cap_mean +
          data = forest_tibble)
 
 #### Model metrics
-m5 %>%
+m5_glance <- m5 %>%
   glance()
+
+m5_glance$sigma # RSE = 0.526 on 30 DoF
+m5_glance$r.squared # Multiple R^2 = 0.5371
+m5_glance$adj.r.squared # Adjusted R^2 = 0.4909 
+m5_glance$statistic # F-statistic = 11.61 on 3 and 30 DoF
+m5_glance$p.value # p-value = 0.00003229 < 0.05
 
 m5 %>%
   augment()
@@ -762,11 +775,7 @@ autoplot(m5,
 ##### Q-Q: The standardized residuals are more normal relative to m5.
 ##### Scale-location: It is not much different than the m4
 
-### RSE = 0.526 on 30 DoF
-### Multiple R^2 = 0.5371
-### Adjusted R^2 = 0.4909 
-### F-statistic = 11.61 on 3 and 30 DoF
-### p-value = 0.00003229 < 0.05
+
 
 #### Variance inflation factor
 vif(m5) # There is moderate (VIF < 5) correlation between the IVs
@@ -777,8 +786,14 @@ m6 <- lm(growth ~ democracy_mean +
          data = forest_tibble)
 
 #### Model metrics
-m6 %>%
+m6_glance <-m6 %>%
   glance()
+
+m6_glance$sigma # RSE = 0.5323 on 31 DoF
+m6_glance$r.squared # Multiple R^2 = 0.5102
+m6_glance$adj.r.squared # Adjusted R^2 = 0.4786 
+m6_glance$statistic # F-statistic = 16.14 on 2 and 31 DoF
+m6_glance$p.value # p-value = 0.00001569 < 0.05
 
 m6 %>%
   augment()
@@ -798,11 +813,6 @@ autoplot(m6,
 ##### suggest heteroskedasticity which violates our homoskedasticity
 ##### assumption
 
-### RSE = 0.5323 on 31 DoF
-### Multiple R^2 = 0.5102
-### Adjusted R^2 = 0.4786 
-### F-statistic = 16.14 on 2 and 31 DoF
-### p-value = 0.00001569 < 0.05
 
 ### Variance inflation factor
 vif(type= "predictor", # VIF = 1.387538
@@ -816,8 +826,14 @@ m7 <- lm(growth ~ democracy_mean *
          data = forest_tibble)
 
 #### Model metrics
-m7 %>%
+m7_glance <- m7 %>%
   glance()
+
+m7_glance$sigma # RSE = 0.421 on 30 DoF
+m7_glance$r.squared # Multiple R^2 = 0.7035
+m7_glance$adj.r.squared # Adjusted R^2 = 0.6738 
+m7_glance$statistic # F-statistic = 23.73 on 3 and 30 DoF
+m7_glance$p.value # p-value = 0.0000000458 < 0.05
 
 m7 %>%
   augment()
@@ -835,11 +851,7 @@ autoplot(m7,
 ##### Scale-location: The line behaves in a zig-zag pattern and not horizontal
 ##### This model has less explanatory power than all of the previous models
 
-### RSE = 0.421 on 30 DoF
-### Multiple R^2 = 0.7035
-### Adjusted R^2 = 0.6738 
-### F-statistic = 23.73 on 3 and 30 DoF
-### p-value = 0.0000000458 < 0.05
+
 
 ## Shapiro-Wilk test
 shapiro.test(m7$residuals)$p.value < 0.05 # Null-hypothesis: distribution is normal
@@ -856,19 +868,18 @@ m8 <- lm(growth ~ democracy_mean *
          data = forest_tibble_2)
 
 #### Model metrics
-m8 %>%
+m8_glance <- m8 %>%
   glance()
+
+m8_glance$sigma # RSE = 0.2017 on 27 DoF
+m7_glance$r.squared # Multiple R^2 = 0.7034933
+m7_glance$adj.r.squared # Adjusted R^2 = 0.6738427 
+m7_glance$statistic # F-statistic = 16.44 on 3 and 27 DoF
+m7_glance$p.value # p-value = 0.000002819 < 0.05
 
 m8 %>%
   augment()
 
-
-
-### RSE = 0.2017 on 27 DoF
-### Multiple R^2 = 0.6462
-### Adjusted R^2 = 0.6069 
-### F-statistic = 16.44 on 3 and 27 DoF
-### p-value = 0.000002819 < 0.05
 
 ##### Visualize the model metrics
 autoplot(m8,
@@ -922,3 +933,4 @@ ggplot(forest_tibble_2,
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                        V. Conclusion                        ::
 ##:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
