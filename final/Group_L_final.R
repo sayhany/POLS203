@@ -43,6 +43,9 @@
 if (!require(tidyverse)) install.packages('tidyverse')
 library(tidyverse)
 
+if (!require(lmtest)) install.packages('lmtest')
+library(lmtest) # For Breusch-Pagan test
+
 if (!require(ggthemes)) install.packages('ggthemes')
 library(ggthemes) # Themes for ggplot2
 
@@ -129,27 +132,27 @@ mean(pols_203_final_merged$Population,
 
 ## Standard deviations of the numeric columns
 sd(pols_203_final_merged$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`,
-     na.rm = TRUE) # sd = 20.20166
+   na.rm = TRUE) # sd = 20.20166
 sd(pols_203_final_merged$output_quantity,
-     na.rm = TRUE) # sd = 258007206831
+   na.rm = TRUE) # sd = 258007206831
 sd(pols_203_final_merged$`Government expenditure on tertiary education as % of GDP (%)`,
-     na.rm = TRUE) # sd = 0.5594122
+   na.rm = TRUE) # sd = 0.5594122
 sd(pols_203_final_merged$`International tourism, number of arrivals`,
-     na.rm = TRUE) # sd = 174571434
+   na.rm = TRUE) # sd = 174571434
 sd(pols_203_final_merged$`Top marginal income tax rate (Reynolds (2008))`,
-     na.rm = TRUE) # sd = 16.45265
+   na.rm = TRUE) # sd = 16.45265
 sd(pols_203_final_merged$`Oil production per capita (kWh)`,
-     na.rm = TRUE) # sd = 167457.5
+   na.rm = TRUE) # sd = 167457.5
 sd(pols_203_final_merged$particip_vdem_owid,
-     na.rm = TRUE) # sd = 0.2098426
+   na.rm = TRUE) # sd = 0.2098426
 sd(pols_203_final_merged$`Per capita electricity (kWh)`,
-     na.rm = TRUE) # sd = 4952.337
+   na.rm = TRUE) # sd = 4952.337
 sd(pols_203_final_merged$`GDP per capita (output, multiple price benchmarks)`,
-     na.rm = TRUE) # sd = 23746.75
+   na.rm = TRUE) # sd = 23746.75
 sd(pols_203_final_merged$`Time required to start a business (days)`,
-     na.rm = TRUE) # sd = 45.96973
+   na.rm = TRUE) # sd = 45.96973
 sd(pols_203_final_merged$Population,
-     na.rm = TRUE) # sd = 588851231
+   na.rm = TRUE) # sd = 588851231
 
 # Filter 2004 and 2014
 pols_203_final_merged_2004_2014 <- pols_203_final_merged %>%
@@ -218,9 +221,9 @@ pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total
 # Data wrangling
 pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
   dplyr::select("id",
-         "Entity",
-         "Year",
-         "value") %>%
+                "Entity",
+                "Year",
+                "value") %>%
   pivot_wider(names_from = "id", # "Tame" the data
               values_from = "value")
 
@@ -234,16 +237,16 @@ pols_203_final_merged_2014 <- pols_203_final_merged_2004_2014 %>%
   filter(Year == 2014) # Year must be equal to 2014
 
 pols_203_joined <- inner_join(pols_203_final_merged_2004,
-                     pols_203_final_merged_2014,
-                     by = c("Entity"),
-                     suffix = c("_2004",
-                                "_2014"))
+                              pols_203_final_merged_2014,
+                              by = c("Entity"),
+                              suffix = c("_2004",
+                                         "_2014"))
 
 # Remove the redundant "Year" column
 pols_203_joined <- pols_203_joined %>%
   dplyr::select(!starts_with("Year")) # We added "dplyr::" before the function
-                                      # because the package "MASS" masks
-                                      # "select" function from dplyr
+# because the package "MASS" masks
+# "select" function from dplyr
 
 # Rename the "Entities" column
 names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country"
@@ -284,9 +287,9 @@ eu <- c("Austria",
 # Whether they are members of  the EU
 pols_203_joined <- pols_203_joined %>%
   mutate(eu = case_when(country %in% eu ~ TRUE, # Add TRUE if the country is in
-                                                # the vector
+                        # the vector
                         !(country %in% eu) ~ FALSE )) # Add FALSE if the country
-                                                      # is NOT in the vector
+# is NOT in the vector
 
 # Summary
 summary(pols_203_joined)
@@ -305,9 +308,9 @@ summary(pols_203_joined)
 # Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"
 pols_203_joined <- pols_203_joined %>%
   dplyr::select(!c(gov_exp_tertiary_ed_vs_GDP_2004, # We added "dplyr::" before the function
-            gov_exp_tertiary_ed_vs_GDP_2014))       # because the package "MASS" masks
-                                                    # "select" function from dplyr
-  
+                   gov_exp_tertiary_ed_vs_GDP_2014))       # because the package "MASS" masks
+# "select" function from dplyr
+
 # Imputation by linear regression
 ## tourists_2004
 plot(pols_203_joined$tourists_2014, pols_203_joined$tourists_2004) # The relationship is linear
@@ -366,26 +369,26 @@ forest_tibble <- forest_tibble %>%
          tourists_per_cap_2004 = tourists_2004 / population_2004, # Calculate the per capita value
          tourists_per_cap_2014 = tourists_2014 / population_2014, # Calculate the per capita value
          total_dependency_ratio_mean = (total_dependency_ratio_2004 + 
-                                        total_dependency_ratio_2014) / 2, # Calculate the mean
+                                          total_dependency_ratio_2014) / 2, # Calculate the mean
          oil_production_per_cap_mean = (oil_production_per_cap_2004 +
-                                        oil_production_per_cap_2014) / 2, # Calculate the mean
+                                          oil_production_per_cap_2014) / 2, # Calculate the mean
          democracy_mean = (democracy_2004 +
-                                democracy_2014) / 2, # Calculate the mean
+                             democracy_2014) / 2, # Calculate the mean
          electricity_per_cap_mean = (electricity_per_cap_2004 +
                                        electricity_per_cap_2014) / 2, # Calculate the mean
          real_GDP_per_cap_mean = (real_GDP_per_cap_2004 +
-                                  real_GDP_per_cap_2014) / 2, # Calculate the mean
+                                    real_GDP_per_cap_2014) / 2, # Calculate the mean
          time_req_to_start_business_mean = (time_req_to_start_business_2004 +
-                                            time_req_to_start_business_2014) / 2) %>% # Calculate the mean
+                                              time_req_to_start_business_2014) / 2) %>% # Calculate the mean
   mutate(tourists_per_cap_mean = (tourists_per_cap_2004 +
-                                  tourists_per_cap_2014) / 2) %>% # Calculate the mean
+                                    tourists_per_cap_2014) / 2) %>% # Calculate the mean
   mutate(growth = (real_GDP_per_cap_2014 - real_GDP_per_cap_2004) / real_GDP_per_cap_2004) %>% # Calculate the growth
-
-dplyr::select(-c("agricultural_output_2004", # Delete the unnecessary columns
-                 "agricultural_output_2014",
-                 "tourists_2004",
-                 "tourists_2014")) %>%
-relocate(eu, .after = growth) # Move eu to the end
+  
+  dplyr::select(-c("agricultural_output_2004", # Delete the unnecessary columns
+                   "agricultural_output_2014",
+                   "tourists_2004",
+                   "tourists_2014")) %>%
+  relocate(eu, .after = growth) # Move eu to the end
 
 ##::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ##                III. First part of the project                ::
@@ -436,7 +439,7 @@ eastern_bloc_old <- c("Poland",
                       "Russia",
                       "Moldova",
                       "Armenia")
-                  
+
 
 # Filter them and save as another dataframe
 eastern_bloc.df <- forest_tibble[forest_tibble$country %in% eastern_bloc_old, ]
@@ -551,7 +554,7 @@ pairs(forest_tibble[, 2:27])
 
 # The original model
 m0 <- lm(growth ~ total_dependency_ratio_mean +
-          oil_production_per_cap_mean + 
+           oil_production_per_cap_mean + 
            democracy_mean +
            oil_production_per_cap_mean +
            electricity_per_cap_mean +
@@ -578,6 +581,9 @@ autoplot(m0,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Breusch-Pagan test
+bptest(m6)$p.value < 0.05 # We can reject the homoskedasticity
 
 #### Findings: 
 #### Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
@@ -640,6 +646,9 @@ autoplot(m1,
          nrow = 3,
          ncol = 1)
 
+# Breusch-Pagan test
+bptest(m1)$p.value < 0.05 # We can reject the homoskedasticity
+
 ##### Findings: 
 ##### Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
 ##### curve, it is almost horizontal.
@@ -689,6 +698,9 @@ autoplot(m2,
          nrow = 3,
          ncol = 1)
 
+# Breusch-Pagan test
+bptest(m2)$p.value < 0.05 # We can reject the homoskedasticity
+
 ##### Findings:
 ##### Residuals versus fitted: Although observation 3, 4, 36 slightly distort
 ##### the curve, it is almost horizontal.
@@ -732,6 +744,9 @@ autoplot(m3,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Breusch-Pagan test
+bptest(m3)$p.value < 0.05 # We can reject the homoskedasticity
 
 ##### Findings:
 ##### Residuals versus fitted: The line has a steep angle before 0.0 on the
@@ -778,6 +793,9 @@ autoplot(m4,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Breusch-Pagan test
+bptest(m4)$p.value < 0.05 # We can reject the homoskedasticity
 
 ##### Findings:
 ##### Residuals versus fitted: The distortion before the 0 on the x-axis is
@@ -829,6 +847,9 @@ autoplot(m5,
          nrow = 3,
          ncol = 1)
 
+# Breusch-Pagan test
+bptest(m5)$p.value < 0.05 # We can reject the homoskedasticity
+
 ##### Findings:
 ##### Residuals versus fitted: The line follows a linear path after the 0.0
 ##### point on the x-axis. However, it does not have pattern, which is good
@@ -872,6 +893,9 @@ autoplot(m6,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Breusch-Pagan test
+bptest(m6)$p.value < 0.05 # We can reject the homoskedasticity
 
 ##### Findings:
 ##### Residuals versus fitted: There is almost no difference when compared to
@@ -921,6 +945,9 @@ autoplot(m7,
          nrow = 3,
          ncol = 1)
 
+# Breusch-Pagan test
+bptest(m7)$p.value < 0.05 # We can reject the homoskedasticity
+
 ##### Findings: 
 ##### Residuals versus fitted: The line is not horizontal at all
 ##### Q-Q: The line that represents standardized residuals is extremely
@@ -965,6 +992,9 @@ autoplot(m8,
          nrow = 3,
          ncol = 1)
 
+# Breusch-Pagan test
+bptest(m8)$p.value < 0.05 # We cannot reject the homoskedasticity
+
 # Cook's distance
 cooks.distance(m8)
 # Findings: No observation has a Cook's distance greater than 1. We interpret
@@ -981,7 +1011,7 @@ cooks.distance(m8)
 
 ## Shapiro-Wilk test
 shapiro.test(m8$residuals)$p.value < 0.05 # p > 0.05
-                                          # We cannot reject the null-hypothesis
+# We cannot reject the null-hypothesis
 
 ### We can say that the residuals are normally distributed unlike the previous
 ### model
@@ -1018,14 +1048,14 @@ ggplot(forest_tibble_2,
 ### However, in this model real_GDP_per_cap_2004 has a very low significance.
 ### Thus, we will start again with the outliers removed
 m9 <- lm(growth ~ total_dependency_ratio_mean +
-            oil_production_per_cap_mean + 
-            democracy_mean +
-            oil_production_per_cap_mean +
-            electricity_per_cap_mean +
-            time_req_to_start_business_mean +
-            tourists_per_cap_mean +
-            real_GDP_per_cap_2004 +
-            eu, data = forest_tibble_2)
+           oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble_2)
 
 # Call stepAIC again
 aic2 <- stepAIC(m9)
@@ -1033,8 +1063,8 @@ aic2
 
 # The real final model
 m10 <- lm(formula = growth ~ total_dependency_ratio_mean + oil_production_per_cap_mean + 
-    democracy_mean + time_req_to_start_business_mean + real_GDP_per_cap_2004, 
-   data = forest_tibble_2)
+            democracy_mean + time_req_to_start_business_mean + real_GDP_per_cap_2004, 
+          data = forest_tibble_2)
 
 m10_glance <- m10 %>%
   glance()
@@ -1044,6 +1074,9 @@ autoplot(m10,
          which = 1:3,
          nrow = 3,
          ncol = 1)
+
+# Breusch-Pagan test
+bptest(m10)$p.value < 0.05 # We cannot reject the homoskedasticity
 
 # Summarize
 summary(m10)
@@ -1073,11 +1106,12 @@ vif(m10)
 ## 1 unit increase in Time Required to Start a Business is associated with a 0.005230104 decrease in GDP growth.
 ## 1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419 decrease in GDP growth.
 
+
 #           By far the most important factor for GDP growth observed here is Democracy
 # Democracy score has a strong and negative effect on GDP per capita growth between
 # 2004 and 2014.We think this could be due to democratic countries already enjoying
 # a high GDP and their growth being limited by the law marginal benefit.
- 
+
 #           We want to conclude by reviewing policy implementations countries make.
 ##Allowing immigration of young workers to reduce Total Dependency Ratio
 ##Increasing fertility rates through better healthcare systems to battle aging, and
@@ -1085,7 +1119,7 @@ vif(m10)
 ##Decreasing time required  to start a business to increase GDP growth
 ##Producing more Oil per capita
 
-## There are many effects these policies have on the economy, wellbeing of citizens, and 
+## There are many effects these policies have on the economy, social welfare, and 
 # many other factors when policymakers are taking decisions. We cannot say with certainty that all of
 # these policies may induce expected results in each case. Further research is needed to come up with
 # case specific policy recommendations.
