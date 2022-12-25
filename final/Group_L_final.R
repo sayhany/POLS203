@@ -782,11 +782,6 @@ m8 <- lm(growth ~ democracy_mean *
 m8 %>%
   glance()
 
-##### Visualize the model metrics
-autoplot(m8,
-         which = 1:3,
-         nrow = 3,
-         ncol = 1)
 
 
 ### RSE = 0.2017 on 27 DoF
@@ -795,8 +790,11 @@ autoplot(m8,
 ### F-statistic = 16.44 on 3 and 27 DoF
 ### p-value = 0.000002819 < 0.05
 
-### Plot the Model metrics
-plot(m8)
+##### Visualize the model metrics
+autoplot(m8,
+         which = 1:3,
+         nrow = 3,
+         ncol = 1)
 
 ## Q-Q plot
 qqnorm(m8$residuals) + qqline(m8$residuals) # Seems to be normally distributed
