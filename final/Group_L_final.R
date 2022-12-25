@@ -740,6 +740,7 @@ scatter3D(forest_tibble_2$real_GDP_per_cap_2004,
           labels = c("GDP per cap 2004",
                      "Democracy score",
                      "Growth 2004-2014"))
+
 ## 2-dimensional plot
 ggplot(forest_tibble_2,
        aes(x = real_GDP_per_cap_2004,
