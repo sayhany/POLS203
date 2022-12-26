@@ -1090,7 +1090,7 @@ vif(m10)
 # to start a business, and real GDP per capita in 2004
 
 ## Our regression equation for m10 is:
-## y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + ( -0.000014419) *  real_GDP_per_cap_2004 + 2.823458000
+## y = (-0.026034479) * total_dependency_ratio_mean + (0.000001980) * oil_production_per_cap_mean + (-1.019645719) * democracy_mean  + (-0.005230104) * time_req_to_start_business_mean + (-0.000014419) *  real_GDP_per_cap_2004 + 2.823458000
 
 ## Therefore we can say:
 ## 1 unit increase in Total Dependency Ratio is associated with a 0.026034479 
