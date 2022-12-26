@@ -36,6 +36,9 @@
 # ultimately decide which model we are going to choose. The most
 # important question to answer was whether the best model will 
 # include EU membership as an IV.
+##================================================================
+##  WARNING: ENLARGE YOUR PLOT PANE TO VIEW THE PLOTS PROPERLY  ==
+##================================================================
 ##...............................................................
 ##                      Start of the code                       .
 ##...............................................................
@@ -69,9 +72,6 @@ library(car) # For vif
 
 if (!require(corrplot)) install.packages('corrplot')
 library(corrplot) # For plotting correlation matrices
-
-# Reset the plot pane
-dev.off()
 
 # Disable scientific notation
 options(scipen = 999)
