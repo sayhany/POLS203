@@ -1,0 +1,1548 @@
+---
+editor_options:
+  markdown:
+    wrap: 101
+output: pdf_document
+---
+
+# Group L Second Project
+
+Emirhan Yücel 2020302264
+
+Mübin Salih Sarıçiçek 2020302243
+
+Sayhan Yalvaçer 2019202063
+
+## ![](images/77380e52-824c-4711-8cd3-757fc1e8c411-02.png){width="326"} {#sec-dataset}
+
+## Dataset
+
+All data is retrieved from "Our World in Data".
+
+## Research question:
+
+What is the relationship between the EU membership and GDP per capita growth during the period \
+2004 - 2014?
+
+**Strategy:**
+
+1.  We first subsetted the former Eastern Bloc countries and divided them into two groups according
+    to whether they joined the EU in 2004, as many of them did.
+2.  We omitted some countries either because they joined the union later or underwent some major
+    economic crises during the specified period.
+3.  Then we proceeded to compare \ their mean values of growth and applied a t-test in order to \
+    test the hypothesis and calculate a confidence interval.
+4.  In the second part of the project, we extendedour sample to all European countries and added many
+    new independent variables. We built several models with differing numbers of IVs, then, we
+    described their Model metrics and compared them according to *Akaike information criterion* to
+    ultimately decide which model we are going to choose.
+5.  The most important question to answer was whether the best model will \ include EU membership as
+    an IV.
+
+## The Code
+
+Load the required packages:
+
+```{r}
+if (!require(tidyverse)) install.packages('tidyverse')
+library(tidyverse)
+
+if (!require(lmtest)) install.packages('lmtest')
+library(lmtest) # For Breusch-Pagan test
+
+if (!require(ggthemes)) install.packages('ggthemes')
+library(ggthemes) # Themes for ggplot2
+
+if (!require(broom)) install.packages('broom')
+library(broom) # Extracting model metrics
+
+if (!require(ggfortify)) install.packages('ggfortify')
+library(ggfortify) # Visualizing model metrics
+
+if (!require(MASS)) install.packages('MASS')
+library(MASS) # For stepAIC
+
+if (!require(simputation)) install.packages('simputation')
+library(simputation) # Simple linear imputation
+
+if (!require(missForest)) install.packages('missForest')
+library(missForest) # Imputation by using random forest algorithm
+
+if (!require(car)) install.packages('car')
+library(car) # For vif
+
+if (!require(corrplot)) install.packages('corrplot')
+library(corrplot) # For plotting correlation matrices
+
+```
+
+**Disable scientific notation**
+
+```{r}
+options(scipen = 999)
+
+```
+
+**Set seed for the reproducibility of imputation results**
+
+```{r}
+set.seed(203)
+```
+
+**Read the dataset using readr**
+
+```{r}
+pols_203_final_merged <- read_csv("pols_203_final_merged.csv")
+```
+
+## Explore the structure of the dataset
+
+Our dataset contains [121078 rows]{.underline} and [17 columns]{.underline}
+
+```{r}
+dim(pols_203_final_merged) 
+```
+
+**Show the names of the columns**
+
+```{r}
+colnames(pols_203_final_merged) 
+```
+
+**Classes of the columns**
+
+```{r}
+class(pols_203_final_merged$id)
+class(pols_203_final_merged$Entity)
+class(pols_203_final_merged$Code)
+class(pols_203_final_merged$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`)
+class(pols_203_final_merged$output_quantity) 
+class(pols_203_final_merged$`Government expenditure on tertiary education as % of GDP (%)`)
+class(pols_203_final_merged$`International tourism, number of arrivals`)
+class(pols_203_final_merged$`Top marginal income tax rate (Reynolds (2008))`)
+class(pols_203_final_merged$`Oil production per capita (kWh)`) 
+class(pols_203_final_merged$particip_vdem_owid) 
+class(pols_203_final_merged$`Per capita electricity (kWh)`) 
+class(pols_203_final_merged$`GDP per capita (output, multiple price benchmarks)`) 
+class(pols_203_final_merged$`Time required to start a business (days)`) 
+class(pols_203_final_merged$Population) 
+```
+
+**Mean values of the columns**
+
+*Age dependency*
+
+```{r}
+mean(pols_203_final_merged$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`,
+     na.rm = TRUE)
+```
+
+*Agricultural output*
+
+```{r}
+mean(pols_203_final_merged$output_quantity,
+     na.rm = TRUE)
+```
+
+*Government expenditure on tertiary education as share of GDP*
+
+```{r}
+mean(pols_203_final_merged$`Government expenditure on tertiary education as % of GDP (%)`,
+     na.rm = TRUE)
+```
+
+*International tourist arrivals*
+
+```{r}
+mean(pols_203_final_merged$`International tourism, number of arrivals`,
+     na.rm = TRUE)
+```
+
+*Top marginal income tax rate*
+
+```{r}
+mean(pols_203_final_merged$`Top marginal income tax rate (Reynolds (2008))`,
+     na.rm = TRUE)
+```
+
+*Oil production per capita*
+
+```{r}
+mean(pols_203_final_merged$`Oil production per capita (kWh)`,
+     na.rm = TRUE)
+```
+
+*Participatory democratic institutions*
+
+```{r}
+mean(pols_203_final_merged$particip_vdem_owid,
+     na.rm = TRUE)
+```
+
+*Per capita electricity generation*
+
+```{r}
+mean(pols_203_final_merged$`Per capita electricity (kWh)`,
+     na.rm = TRUE)
+```
+
+*GDP per capita*
+
+```{r}
+mean(pols_203_final_merged$`GDP per capita (output, multiple price benchmarks)`,
+     na.rm = TRUE)
+```
+
+*Time required to start a business*
+
+```{r}
+mean(pols_203_final_merged$`Time required to start a business (days)`,
+     na.rm = TRUE)
+```
+
+*Population*
+
+```{r}
+mean(pols_203_final_merged$Population,
+     na.rm = TRUE)
+```
+
+**Standard deviations of the numeric columns**
+
+*Age dependency*
+
+```{r}
+sd(pols_203_final_merged$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`,
+   na.rm = TRUE)
+```
+
+*Agricultural output*
+
+```{r}
+sd(pols_203_final_merged$output_quantity,
+   na.rm = TRUE)
+```
+
+*Government expenditure on tertiary education as share of GDP*
+
+```{r}
+sd(pols_203_final_merged$`Government expenditure on tertiary education as % of GDP (%)`,
+   na.rm = TRUE)
+```
+
+*International tourist arrivals*
+
+```{r}
+sd(pols_203_final_merged$`International tourism, number of arrivals`,
+   na.rm = TRUE) 
+```
+
+*Top marginal income tax rate*
+
+```{r}
+sd(pols_203_final_merged$`Top marginal income tax rate (Reynolds (2008))`,
+   na.rm = TRUE)
+```
+
+*Oil production per capita*
+
+```{r}
+sd(pols_203_final_merged$`Oil production per capita (kWh)`,
+   na.rm = TRUE)
+```
+
+*Participatory democratic institutions*
+
+```{r}
+sd(pols_203_final_merged$particip_vdem_owid,
+   na.rm = TRUE)
+```
+
+*Per capita electricity generation*
+
+```{r}
+sd(pols_203_final_merged$`Per capita electricity (kWh)`,
+   na.rm = TRUE)
+```
+
+*GDP per capita*
+
+```{r}
+sd(pols_203_final_merged$`GDP per capita (output, multiple price benchmarks)`,
+   na.rm = TRUE)
+```
+
+*Time required to start a business*
+
+```{r}
+sd(pols_203_final_merged$`Time required to start a business (days)`,
+   na.rm = TRUE)
+```
+
+*Population*
+
+```{r}
+sd(pols_203_final_merged$Population,
+   na.rm = TRUE)
+```
+
+**Filter 2004 and 2014**
+
+```{r}
+pols_203_final_merged_2004_2014 <- pols_203_final_merged %>%
+  filter(Year == 2004 | Year == 2014)
+```
+
+**Create the vector of countries to be studied**
+
+```{r}
+country_vector <- c("Russia", "Germany", "United Kingdom", "France", "Italy",
+                    "Spain", "Poland", "Netherlands", "Belgium",
+                    "Czech Republic", "Greece", "Portugal", "Sweden", "Hungary",
+                    "Belarus", "Austria", "Serbia", "Switzerland", "Denmark",
+                    "Finland", "Slovakia", "Norway", "Ireland", "Croatia",
+                    "Moldova", "Armenia", "Lithuania", "North Macedonia",
+                    "Slovenia", "Latvia", "Estonia", "Montenegro", "Luxemburg",
+                    "Malta", "Iceland", "Azerbaijan")
+```
+
+**Alphabetically rearrange**
+
+```{r}
+country_vector <- sort(country_vector) # Sort in ascending order
+```
+
+**Filter for those countries**
+
+```{r}
+pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
+  filter(Entity %in% country_vector) # Is the country in our country list?
+```
+
+#### **Move values to a single column to prepare the pols_203_joined for wrangling**
+
+1.  **Spot the first appearance of each variable**
+
+```{r}
+match(unique(pols_203_final_merged_2004_2014$id), pols_203_final_merged_2004_2014$id)
+```
+
+2.  **Move the columns**
+
+```{r include=FALSE}
+pols_203_final_merged_2004_2014$value <-c(pols_203_final_merged_2004_2014$`Total dependency ratio - Sex: all - Age: none - Variant: estimates`[1:68],
+                                          pols_203_final_merged_2004_2014$output_quantity[69:134],
+                                          pols_203_final_merged_2004_2014$`Government expenditure on tertiary education as % of GDP (%)`[135:165],
+                                          pols_203_final_merged_2004_2014$`International tourism, number of arrivals`[166:229],
+                                          pols_203_final_merged_2004_2014$`Oil production per capita (kWh)`[230:296],
+                                          pols_203_final_merged_2004_2014$particip_vdem_owid[297:364],
+                                          pols_203_final_merged_2004_2014$`Per capita electricity (kWh)`[365:431],
+                                          pols_203_final_merged_2004_2014$`GDP per capita (output, multiple price benchmarks)`[432:499],
+                                          pols_203_final_merged_2004_2014$`Time required to start a business (days)`[500:564],
+                                          pols_203_final_merged_2004_2014$Population[565:632])
+```
+
+**Data wrangling**
+
+```{r}
+pols_203_final_merged_2004_2014 <- pols_203_final_merged_2004_2014 %>%
+  dplyr::select("id",
+                "Entity",
+                "Year",
+                "value") %>%
+  pivot_wider(names_from = "id", # "Tame" the data
+              values_from = "value")
+```
+
+#### **Split the dataframe into two by year**
+
+**Filter for 2004**
+
+```{r}
+pols_203_final_merged_2004 <- pols_203_final_merged_2004_2014 %>% 
+  filter(Year == 2004) # Year must be equal to 2004
+```
+
+**Filter for 2014**
+
+```{r}
+pols_203_final_merged_2014 <- pols_203_final_merged_2004_2014 %>%
+  filter(Year == 2014) # Year must be equal to 2014
+```
+
+**Join the two dataframes**
+
+```{r}
+pols_203_joined <- inner_join(pols_203_final_merged_2004,
+                              pols_203_final_merged_2014,
+                              by = c("Entity"),
+                              suffix = c("_2004",
+                                         "_2014"))
+```
+
+**Remove the redundant "Year" column**
+
+```{r}
+pols_203_joined <- pols_203_joined %>%
+  dplyr::select(!starts_with("Year"))
+```
+
+**Rename the "Entities" column**
+
+```{r}
+names(pols_203_joined)[names(pols_203_joined) == "Entity"] <- "country"
+```
+
+**Examine**
+
+```{r}
+pols_203_joined
+```
+
+**Create a vector that lists all the EU countries**
+
+```{r}
+eu <- c("Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic",
+        "Denmark", "Estonia", "Finland", "France", "Germany", "Greece",
+        "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg",
+        "Malta", "Netherlands", "Poland", "Portugal", "Romania", "Slovakia",
+        "Slovenia", "Spain", "Sweden", "United Kingdom")
+```
+
+**Class them according to whether they are members of the EU**
+
+```{r}
+pols_203_joined <- pols_203_joined %>%
+  mutate(eu = case_when(country %in% eu ~ TRUE, 
+                        !(country %in% eu) ~ FALSE ))
+```
+
+#### Summary
+
+```{r}
+summary(pols_203_joined)
+```
+
+[Discussion: Some columns have N/As]{.underline}
+
+We decided to remove the "gov_exp_tertiary_ed_vs_GDP" columns since they have too many missing
+values. However, we will fill in the few other values that are missing just for 2004 by using
+imputation (from Chapter 16 of the textbook, Statistical Methods for the Social Science by Alan
+Agresti). Because, if we strictly avoid all the data that contains some missing values, we will not
+be able to consider various IVs and if we delete the country rows that have missing values, our model
+will be rather biased since the countries we have complete data for are almost always developed
+countries.
+
+**Remove "gov_exp_tertiary_ed_vs_GDP_2004" and "gov_exp_tertiary_ed_vs_GDP_2014"**
+
+```{r}
+pols_203_joined <- pols_203_joined %>% 
+  dplyr::select(!c(gov_exp_tertiary_ed_vs_GDP_2004, gov_exp_tertiary_ed_vs_GDP_2014))
+```
+
+#### Imputation by linear regression
+
+*tourists_2004*
+
+```{r}
+plot(pols_203_joined$tourists_2014, pols_203_joined$tourists_2004)
+```
+
+[The relationship is linear].{.underline}
+
+[Imputation by linear regression is justified]{.underline}
+
+```{r}
+pols_203_joined <- impute_lm(pols_203_joined,
+                             tourists_2004 ~ tourists_2014)
+```
+
+*agricultural_output_2004*
+
+```{r}
+plot(pols_203_joined$agricultural_output_2004,
+     pols_203_joined$agricultural_output_2014)
+# The relationship is non-linear
+```
+
+[Imputation by linear regression is not justified]{.underline}
+
+**oil_production_per_cap_2004**
+
+```{r}
+plot(pols_203_joined$oil_production_per_cap_2014,
+     pols_203_joined$oil_production_per_cap_2004)
+# The relationship is non-linear
+```
+
+[Imputation by linear regression is not justified]{.underline}
+
+**electricity_per_cap_2004**
+
+```{r}
+plot(pols_203_joined$electricity_per_cap_2014,
+     pols_203_joined$electricity_per_cap_2004)
+# The relationship is non-linear
+```
+
+[Imputation by linear regression is not justified]{.underline}
+
+**time_req_to_start_business_2004**
+
+```{r}
+plot(pols_203_joined$time_req_to_start_business_2014,
+     pols_203_joined$time_req_to_start_business_2004)
+# The is not much relationship
+```
+
+[Imputation by linear regression is not justified]{.underline}
+
+We decided to fill in the remaining missing values by using a non-parametric
+
+algorithm called "randomForest"
+
+**Prepare the dataset for imputation**
+
+```{r}
+pols_203_joined_4_imp <- dplyr::select(pols_203_joined, -c("country", "eu"))
+```
+
+**Convert it into an ordinary dataframe**
+
+```{r}
+pols_203_joined_4_imp <- as.data.frame(pols_203_joined_4_imp)
+```
+
+**Run the algorithm**
+
+```{r}
+forest <- missForest(pols_203_joined_4_imp)
+```
+
+**Convert it back to a tibble**
+
+```{r}
+forest_tibble <- as_tibble(forest$ximp)
+```
+
+**Add the "country" and "eu" columns**
+
+```{r}
+forest_tibble <- bind_cols(pols_203_joined$country, forest_tibble, pols_203_joined$eu)
+```
+
+#### Repair column names
+
+```{r}
+colnames(forest_tibble)[1] <- "country"
+colnames(forest_tibble)[20] <- "eu"
+```
+
+#### Summary
+
+```{r}
+summary(forest_tibble) 
+```
+
+[There is no N/A left]{.underline}
+
+**Calculate the means and per capita values wherever needed**
+
+```{r}
+forest_tibble <- forest_tibble %>% 
+  mutate(agricultural_output_per_cap_2004 = agricultural_output_2004 / population_2004,
+         agricultural_output_per_cap_2014 = agricultural_output_2014 / population_2014,
+         tourists_per_cap_2004 = tourists_2004 / population_2004,
+         tourists_per_cap_2014 = tourists_2014 / population_2014,
+         total_dependency_ratio_mean = (total_dependency_ratio_2004 + 
+                                          total_dependency_ratio_2014) / 2,
+         oil_production_per_cap_mean = (oil_production_per_cap_2004 +
+                                          oil_production_per_cap_2014) / 2,
+         democracy_mean = (democracy_2004 +
+                             democracy_2014) / 2,
+         electricity_per_cap_mean = (electricity_per_cap_2004 +
+                                       electricity_per_cap_2014) / 2,
+         real_GDP_per_cap_mean = (real_GDP_per_cap_2004 +
+                                    real_GDP_per_cap_2014) / 2,
+         time_req_to_start_business_mean = (time_req_to_start_business_2004 +
+                                              time_req_to_start_business_2014) / 2) %>%
+  mutate(tourists_per_cap_mean = (tourists_per_cap_2004 +
+                                    tourists_per_cap_2014) / 2) %>% 
+  mutate(growth = (real_GDP_per_cap_2014 - real_GDP_per_cap_2004) / real_GDP_per_cap_2004) %>% 
+
+ dplyr::select(-c("agricultural_output_2004", 
+                   "agricultural_output_2014",
+                   "tourists_2004",
+                   "tourists_2014")) %>%
+  relocate(eu, .after = growth) # Move eu to the end
+```
+
+## First part of the project
+
+In our first project, we tried to answer the question of whether former Eastern Bloc countries that
+joined the EU in 2004 enjoyed higher GDP PPP per capita growth rates.
+
+We will briefly replicate what we did back then as the first part of this project. However, this time
+we will use the data retrieved from Our World in Data website instead of World Bank DataBank.
+
+**Treatment:** Joining the EU in 2004 (nominal)
+
+**Dependent variable:** GDP PPP *per capita* growth (continuous numerical)
+
+**Null-hypothesis:** Mean GDP PPP *per capita* growth between 2004 - 2014 for \ the former Eastern
+Bloc countries that joined the EU is equal to the mean \ GDP PPP per capita growth for the former
+Eastern Bloc countries that did not \ join the union
+
+**Alternative hypothesis:** Mean GDP PPP *per capita* growth between 2004 - 2014 for the former
+Eastern Bloc countries that joined the EU is not equal to the mean GDP PPP per capita growth for the
+former Eastern Bloc countries that did not join the union.
+
+**Strategy:** Compare the treatment and control groups and then apply a t-test.
+
+## Start of the code
+
+**Create a vector of the countries that we compared in the first project**
+
+```{r}
+eastern_bloc_old <- c("Poland", "Czechia", "Estonia", "Hungary", "Latvia",
+                      "Lithuania", "Slovakia", "Slovenia", "Belarus", "Russia",
+                      "Moldova", "Armenia")
+```
+
+**Filter them and save as another dataframe**
+
+```{r}
+eastern_bloc.df <- forest_tibble[forest_tibble$country %in% eastern_bloc_old,]
+```
+
+**Summarize**
+
+```{r}
+eastern_bloc.df %>% group_by(eu) %>% 
+  summarize(mean_growth_per_cent = mean(growth) * 100)
+```
+
+**Plot**
+
+```{r}
+ggplot(eastern_bloc.df,
+       aes(x = fct_reorder(country, growth),
+           y = growth * 100,
+           fill = eu)) +
+  geom_col() +
+  xlab("Countries") +
+  ylab("GDP per capita, real GDP growth per cent 2004-2014") +
+  coord_flip() +
+  theme_economist() +
+  theme(axis.title.x = element_text(margin = margin(t = 15)),
+        axis.title.y = element_text(margin = margin(r = 15))) +
+  scale_fill_discrete("Did join the EU?") +
+  geom_hline(yintercept = mean(eastern_bloc.df$growth * 100),
+             color = "grey40",
+             linetype = 3) +
+  annotate( "text", x = 4, y = 80,
+            label = "The\nmean\ngrowth",
+            vjust = 1, size = 2.5, color = "grey40") +
+  annotate( "curve",
+            x = 4.1,
+            y = 80,
+            xend = 4.6,
+            yend = 71.5,
+            arrow = arrow(length = unit(0.15, "cm"),
+                          type = "closed"), color = "grey40") +
+  labs(caption = "Source: Our World in Data")
+```
+
+## Significance test
+
+```{r}
+t_test <- t.test(eastern_bloc.df$growth[!eastern_bloc.df$eu],
+                 eastern_bloc.df$growth[eastern_bloc.df$eu],
+                 paired = FALSE,
+                 conf.level = 0.95)
+```
+
+**Is it statistically significant?**
+
+```{r}
+t_test$p.value < 0.05 # Yes, it is statistically significant (p < 0.05)
+```
+
+**t-test**
+
+```{r}
+t_test
+```
+
+## Second part of the project
+
+### Descriptive statistics
+
+**Boxplots**
+
+```{r}
+boxplot(forest_tibble$total_dependency_ratio_mean)
+boxplot(forest_tibble$total_dependency_ratio_mean)
+boxplot(forest_tibble$oil_production_per_cap_mean)
+boxplot(forest_tibble$democracy_mean)
+boxplot(forest_tibble$electricity_per_cap_mean)$stats
+boxplot(forest_tibble$time_req_to_start_business_mean)
+boxplot(forest_tibble$tourists_per_cap_mean)
+```
+
+[We have several outliers. However, we decided not to remove them yet]{.underline}
+
+[since we want to avoid overfitting]{.underline}
+
+### Build a model
+
+**Correlation matrix**
+
+```{r}
+cor_matrix <- cor(forest_tibble[, c(6, 20:23, 25:27)])
+```
+
+**Plot the correlation matrix**
+
+```{r}
+corrplot(cor_matrix, tl.cex = 0.75)
+```
+
+**Findings:**
+
+1.  Real GDP per capita is **positively** correlated with total dependency
+
+ratio, democracy, and electricity generation per capita. Therefore an increase
+
+in one of these measures would correspond to an increase in the real GDP per
+
+capita.
+
+2.  Real GDP per capita is **negatively** correlated with growth and the
+
+time required to start a business. As the time required to start a business
+
+increases Real GDP per capita tend to decrease.
+
+3.  The total dependency ratio is **negatively** correlated with the time
+
+required to start a business. A longer time required to start a business is
+
+related to a lower total age dependency ratio.
+
+4.  Democracy score is **strongly** and **negatively** correlated with real GDP
+
+per capita growth between 2004 and 2014. We think this could be due to
+
+democratic countries already enjoying a high GDP and their growth is affected
+
+by the law of marginal benefit. Countries with higher democracy scores have a
+
+positive correlation with Real GDP but a strong and negative one with growth.
+
+**All possible pairs**
+
+```{r}
+pairs(forest_tibble[, 2:27])
+```
+
+**The original model**
+
+```{r}
+m0 <- lm(growth ~ total_dependency_ratio_mean +
+           oil_production_per_cap_mean +
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+```
+
+**Model metrics**
+
+```{r}
+summary(m0) %>% glance()
+
+m0_augment <- m0 %>% augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m0)
+```
+
+**Findings:** We used Cook's distance to find outliers that would distort our
+regression model. Norway has a distance of 19.19, the highest recorded. T
+his observation would negatively affect our model significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m0, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m0)$p.value < 0.05
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+**Findings**:
+
+1.  Residuals versus fitted: Although observations 3, 4, and 36 slightly
+
+    distort the curve, it is almost horizontal.
+
+2.  Q-Q: Residuals have an S-like distribution.
+
+3.  Scale-location: The data looks heteroskedastic since the line is horizontal
+
+    and shows a steep angle at the right end. The residuals begin to spread
+
+    wider as it passes 1 on the x-axis.
+
+4.  The independent variables explain 0.422 = 42.2% of the variation in the
+
+    dependent variable
+
+**Variance inflation factor**
+
+```{r}
+vif(m0) # There is moderate (VIF < 5) correlation between the IVs
+```
+
+**Use "Akaike information criterion" for model selection**
+
+```{r}
+aic <- stepAIC(m0) 
+aic$anova # View the steps
+```
+
+## Description of the steps
+
+### Remove total_dependency_ratio_mean
+
+```{r}
+m1 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m1_glance <- m1 %>%
+  glance()
+
+m1_glance$r.squared ### Multiple R^2 = 0.5601
+m1_glance$adj.r.squared # Adjusted R^2 = 0.4417 
+m1_glance$sigma # RSE 0.5508327
+m1_glance$statistic # F-statistic = 4.729696
+m1_glance$p.value ### p-value = 0.001565 < 0.05
+m1_glance$AIC # Akaike Information Criterion
+
+m1 %>%
+  augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m1) 
+```
+
+**Findings**: We used Cook's distance to find outliers that would distort our regression model.
+Norway has a distance of 22.13, the highest recorded. This observation would negatively affect our
+model significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m1, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m1)$p.value < 0.05 # We can reject the homoskedasticity
+```
+
+Findings:
+
+1.  Residuals versus fitted: Although observation 3, 4, 36 slightly distort the
+
+    curve, it is almost horizontal.
+
+2.  Q-Q: Residuals have a S-like distribution.
+
+3.  Scale-location: Heteroskedasticity is still present but it is smaller in
+
+    comparison to m0.
+
+4.  The independent variables explain 0.4417 = 44.17% of the variation in the
+
+    dependent variable.
+
+#### Variance inflation factor
+
+```{r}
+vif(m1) # There is moderate (VIF < 5) correlation between the IVs
+
+
+```
+
+**Remove tourists_per_cap_mean**
+
+```{r}
+m2 <- lm(growth ~ oil_production_per_cap_mean +
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004 +
+           eu,
+         data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m2_glance <- m2 %>%
+  glance()
+
+m2_glance$r.squared # Multiple R^2 = 0.5577038
+m2_glance$adj.r.squared # Adjusted R^2 = 0.4594 
+m2_glance$sigma # RSE = 0.5420223  on 27 DoF
+m2_glance$statistic # F-statistic = 5.673 on 6 and 27 DoF
+m2_glance$p.value # p-value = 0.0006433 < 0.05
+
+m2 %>%
+  augment()
+
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m2) 
+```
+
+Findings: We used Cook's distance to find outliers that would distort our regression model. Norway
+has a distance of 25.35, the highest recorded. This observation would negatively affect our model
+significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m2, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m2)$p.value < 0.05
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: Although observation 3, 4, 36 slightly distort the curve, it is almost
+    horizontal.
+
+2.  Q-Q: Residuals still have a S-like distribution
+
+3.  Scale-location: The data is less heteroskedastic than the previous models
+
+4.  The independent variables explain 0.4594 = 45.94% of the variation in the
+
+    dependent variable.
+
+#### Variance inflation factor
+
+```{r}
+vif(m2) 
+```
+
+[There is moderate (VIF \< 5) correlation between the IVs]{.underline}
+
+### Remove electricity_per_cap_mean
+
+```{r}
+m3 <- lm(growth ~ oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m3_glance <- m3 %>%
+  glance()
+
+m3_glance$sigma # RSE = 0.535176 on 28 DoF
+m3_glance$r.squared # Multiple R^2 = 0.553
+m3_glance$adj.r.squared # Adjusted m^2 = 0.4731 
+m3_glance$statistic # F-statistic = 6.927 on 5 and 28 DoF
+m3_glance$p.value # p-value = 0.0002538 < 0.05
+
+m3 %>%
+  augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m3) 
+```
+
+Findings: We used Cook's distance to find outliers that would distort our regression model. Norway
+has a distance of 31.07, the highest recorded. This observation would negatively affect our model
+significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m3, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m3)$p.value < 0.05
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: The line has a steep angle before 0.0 on the axis. We can say that this
+    model is inferior to the previous models.
+2.  Q-Q: It has a more prominent S-shape than the previous ones .
+3.  Scale-location: This is the least homoskedastic model we have examined so far.
+4.  The independent variables explain 0.4731 = 47.31% of the variation in the dependent variable.
+
+**Variance inflation factor**
+
+```{r}
+vif(m3)
+```
+
+[There is moderate (VIF \< 5) correlation between the IVs]{.underline}
+
+**Remove eu**
+
+```{r}
+m4 <- lm(growth ~ oil_production_per_cap_mean +
+           democracy_mean +
+           oil_production_per_cap_mean +
+           time_req_to_start_business_mean +
+           real_GDP_per_cap_2004, data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m4_glance <- m4 %>%
+  glance()
+
+m4_glance$sigma # RSE = 0.531 on 29 DoF
+m4_glance$r.squared # Multiple R^2 = 0.5441
+m4_glance$adj.r.squared # Adjusted R^2 = 0.4812 
+m4_glance$statistic # F-statistic = 8.651 on 4 and 29 DoF
+m4_glance$p.value # p-value = 0.0001007 < 0.05
+
+m4 %>%
+  augment()
+
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m4)
+```
+
+Findings: We used Cook's distance to find outliers that would distort our regression model. Norway
+has a distance of 37.42, the highest recorded. This observation would negatively affect our model
+significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m4, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m4)$p.value < 0.05 
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: The distortion before the 0 on the x-axis is increased.
+2.  Q-Q: The standardized residual still constitute an S-shape. However, the residuals between the
+    1st and the 2nd quartiles follow a more normal distribution than those of m3.
+3.  Scale-location: The line is relatively horizontal between 0 and 1 on the x-axis is horizontal.
+    However, the data is still very heteroskedastic.
+4.  The independent variables explain 0.4812 = 48.12% of the variation in the dependent variable.
+
+**Variance inflation factor**
+
+```{r}
+vif(m4)
+```
+
+[There is moderate (VIF \< 5) correlation between the IVs]{.underline}
+
+Apparently, we can explain the growth without using the EU membership data.
+
+This finding refutes what we found in our first project.
+
+**Remove time_req_to_start_business_mean**
+
+```{r}
+m5 <- lm(growth ~ oil_production_per_cap_mean +
+           democracy_mean +
+           oil_production_per_cap_mean +
+           real_GDP_per_cap_2004, data = forest_tibble)
+```
+
+**Model metrics**
+
+```{r}
+m5_glance <- m5 %>%
+  glance()
+
+m5_glance$sigma # RSE = 0.526 on 30 DoF
+m5_glance$r.squared # Multiple R^2 = 0.5371
+m5_glance$adj.r.squared # Adjusted R^2 = 0.4909 
+m5_glance$statistic # F-statistic = 11.61 on 3 and 30 DoF
+m5_glance$p.value # p-value = 0.00003229 < 0.05
+
+m5 %>% augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m5)
+```
+
+Findings: We used Cook's distance to find outliers that would distort our regression model. Norway
+has a distance of 48.93, the highest recorded. This observation would negatively affect our model
+significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m5, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m5)$p.value < 0.05
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: The line follows a linear path after the 0.0 point on the x-axis.
+    However, it does not have pattern, which is good for our assumption of normality.
+2.  Q-Q: The standardized residuals are more normal relative to m5.
+3.  Scale-location: It is not much different than the m4
+4.  The independent variables explain 0.4909 = 49.09% of the variation in the dependent variable.
+
+#### Variance inflation factor
+
+```{r}
+vif(m5)
+```
+
+[There is moderate (VIF \< 5) correlation between the IVs]{.underline}
+
+**Remove oil_production_per_cap_mean**
+
+```{r}
+m6 <- lm(growth ~ democracy_mean + real_GDP_per_cap_2004, data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m6_glance <-m6 %>%
+  glance()
+
+m6_glance$sigma # RSE = 0.5323 on 31 DoF
+m6_glance$r.squared # Multiple R^2 = 0.5102
+m6_glance$adj.r.squared # Adjusted R^2 = 0.4786 
+m6_glance$statistic # F-statistic = 16.14 on 2 and 31 DoF
+m6_glance$p.value # p-value = 0.00001569 < 0.05
+
+m6 %>%
+  augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m6) 
+```
+
+Findings: We used Cook's distance, find outliers that would distort our regression model. Azerbaijan
+and Belarus have distances of 4.35 and 1.39 respectively, highest recorded. These observations would
+negatively affect our model significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m6, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m6)$p.value < 0.05 
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: There is almost no difference when compared to the previous model.
+2.  Q-Q: The standardized residuals are distributed more normally than those of m5.
+3.  Scale-location: The distribution of the standardized residuals still suggest heteroskedasticity
+    which violates our homoskedasticity assumption.
+4.  The independent variables explain 0.4786 = 47.86% of the variation in the dependent variable.
+
+**Variance inflation factor**
+
+```{r}
+vif(m6)
+```
+
+[Multicollinearity does not exist (VIF = 1.387538 \< 1.5 \< 5)]{.underline}
+
+Although the model with real_GDP_per_cap_2004 has more explanatory power, its statistical
+significance is low. Perhaps, real_GDP_per_cap_2004 and democracy_mean interact. We will try one last
+model.
+
+```{r}
+m7 <- lm(growth ~ democracy_mean * real_GDP_per_cap_2004, data = forest_tibble)
+```
+
+#### Model metrics
+
+```{r}
+m7_glance <- m7 %>%
+  glance()
+
+m7_glance$sigma # RSE = 0.421 on 30 DoF
+m7_glance$r.squared # Multiple R^2 = 0.7035
+m7_glance$adj.r.squared # Adjusted R^2 = 0.6738 
+m7_glance$statistic # F-statistic = 23.73 on 3 and 30 DoF
+m7_glance$p.value # p-value = 0.0000000458 < 0.05
+
+m7 %>%
+  augment()
+```
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m7) 
+```
+
+Findings: We used Cook's distance to find outliers that would distort our regression model.
+Azerbaijan and Belarus have distances of 6.11 and 1.79 respectively, the highest recorded. These
+observations would negatively affect our model significantly.
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m7, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m7)$p.value < 0.05
+```
+
+[We can reject the homoskedasticity]{.underline}
+
+Findings:
+
+1.  Residuals versus fitted: The line is not horizontal at all.
+
+2.  Q-Q: The line that represents standardized residuals is extremely
+
+    distorted.
+
+3.  Scale-location: The line behaves in a zig-zag pattern and not horizontal.
+
+4.  This model has less explanatory power than all of the previous models.
+
+The independent variables explain 0.6738 = 67.38% of the variation in the
+
+dependent variable.
+
+**Shapiro-Wilk test**
+
+```{r}
+shapiro.test(m7$residuals)$p.value < 0.05 
+```
+
+**Null-hypothesis:** distribution is normal **p-value =** 0.0003711 Normality of residuals is
+rejected
+
+**Perhaps we need to remove some variables**
+
+```{r}
+forest_tibble_2 <- forest_tibble[-c(3, 4, 33),] # Azerbaijan, Belarus, Switzerland are removed
+```
+
+**Now call the linear model again**
+
+```{r}
+m8 <- lm(growth ~ democracy_mean * real_GDP_per_cap_2004, data = forest_tibble_2)
+```
+
+#### Model metrics
+
+```{r}
+m8_glance <- m8 %>% glance()
+
+m8_glance$sigma # RSE = 0.2017 on 27 DoF
+m8_glance$r.squared # Multiple R^2 = 0.7034933
+m8_glance$adj.r.squared # Adjusted R^2 = 0.6738427 
+m8_glance$statistic # F-statistic = 16.44 on 3 and 27 DoF
+m8_glance$p.value # p-value = 0.000002819 < 0.05
+
+m8 %>% augment()
+```
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m8, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m8)$p.value < 0.05
+```
+
+[We cannot reject the homoskedasticity]{.underline}
+
+**Cook's distance**
+
+```{r}
+cooks.distance(m8)
+```
+
+Findings: No observation has a Cook's distance greater than 1. We interpret that as no observation
+distorts our model significantly.
+
+Findings:
+
+1.  Residuals versus fitted: The line is diagonal before the 0.15 point on the x-axis yet it is more
+    horizontal when compared to m7
+2.  Q-Q: The standardized residuals are distributed normally.
+3.  Scale-location: Although the line has several curves, it is more horizontal than the previous
+    model.
+4.  The independent variables explain 0.6738 = 67.38% of the variation in the dependent variable.
+
+**Shapiro-Wilk test**
+
+```{r}
+shapiro.test(m8$residuals)$p.value < 0.05
+```
+
+p \> 0.05 $\rightarrow$ [We cannot reject the null-hypothesis]{.underline}
+
+We can say that the residuals are normally distributed unlike the previous model.
+
+Although its R\^2 is smaller when compared to the previous model, this model has the advantage of
+normally distributed residuals.
+
+$y=(-2.57155696)\times\text{democracy mean}$ $+ (-0.00005586) \times\text{real GDP per cap 2004}$
+$+(0.00006662)\times \text{(democracy mean real GDP per cap 2004)}$ $+ 2.36268371$ \#### Plot the
+model
+
+**2-dimensional plot**
+
+```{r}
+ggplot(forest_tibble_2,
+       aes(x = real_GDP_per_cap_2004,
+           y = growth,
+           color = democracy_mean)) +
+  scale_y_log10() +
+  geom_point(size = 4.2) +
+  scale_color_viridis_c(option = "inferno",
+                        alpha = 0.8,
+                        name = "Democracy score") +
+  xlab("Real GDP per capita in 2004") +
+  ylab("Real GDP per capita growth") +
+  ggtitle("Our final linear model") +
+  labs(caption = "Source: Our World in Data")
+```
+
+However, in this model real_GDP_per_cap_2004 has a very low significance.
+
+Thus, we will start again with the outliers removed.
+
+```{r}
+m9 <- lm(growth ~ total_dependency_ratio_mean +
+           oil_production_per_cap_mean + 
+           democracy_mean +
+           oil_production_per_cap_mean +
+           electricity_per_cap_mean +
+           time_req_to_start_business_mean +
+           tourists_per_cap_mean +
+           real_GDP_per_cap_2004 +
+           eu, data = forest_tibble_2)
+```
+
+**Call stepAIC again**
+
+```{r}
+aic2 <- stepAIC(m9) 
+aic2
+```
+
+**The real final model**
+
+```{r}
+m10 <- lm(formula = growth ~ total_dependency_ratio_mean + oil_production_per_cap_mean + 
+            democracy_mean + time_req_to_start_business_mean + real_GDP_per_cap_2004, 
+          data = forest_tibble_2)
+```
+
+**Model metrics**
+
+```{r}
+m10_glance <- m10 %>%
+  glance()
+```
+
+**Visualize the model metrics**
+
+```{r}
+autoplot(m10, which = 1:3, nrow = 3, ncol = 1)
+```
+
+**Breusch-Pagan test**
+
+```{r}
+bptest(m10)$p.value < 0.05
+```
+
+[We cannot reject the homoskedasticity]{.underline}
+
+**Summarize**
+
+```{r}
+summary(m10)
+```
+
+**Variance inflation factors**
+
+```{r}
+vif(m10)
+```
+
+We have tested several different independent variables to see their implications  on GDP growth of
+Eastern Bloc countries during the 2004-2014 period.
+
+[We decided to use m10 as our final model.]{.underline}
+
+The explanatory variables of our final model are age dependency ratio,
+
+oil production per capita, participatory democracy score, the time required
+
+to start a business, and real GDP per capita in 2004.
+
+**Our regression equation for m10 is:**
+
+$y = (-0.026034479) \times \text{total-dependency-ratio-mean}+$
+
+$(0.000001980) \times \text{oil-production-per-cap-mean}+$
+
+$(-1.019645719) \times \text{democracy-mean}+$
+
+$(-0.005230104) \times \text{time-req-to-start-a-business-mean}+$
+
+$(-0.000014419) \times \text{real-GDP-per-cap-2004} + 2.823458000$
+
+**Therefore we can say:**
+
+1.  1 unit increase in Total Dependency Ratio is associated with a 0.026034479
+
+decrease in GDP growth.
+
+2.  1 unit increase in Oil Production per Capita is associated with a 0.000001980
+
+increase in GDP growth.
+
+3.  1 unit increase in Democracy is associated with a 1.019645719 decrease in GDP
+
+growth.
+
+4.  1 unit increase in Time Required to Start a Business is associated with a
+
+0.005230104 decrease in GDP growth.
+
+5.  1 unit increase in Real GDP per capita in 2004 associated with a 0.000014419
+
+decrease in GDP growth.
+
+By far the most important factor for GDP growth observed here is
+
+participatory democracy. Participatory democracy score has a strong and
+
+negative effect on GDP per capita growth between 2004 and 2014. We think this
+
+could be due to democratic countries already enjoying higher GDP per capita
+
+and their growth being limited by the law of marginal benefit.
+
+We want to conclude by reviewing policy implementations countries make.
+
+1.  Allowing immigration of young workers to reduce the age dependency.
+
+2.  Increasing fertility rates through better healthcare systems to battle aging, and reduce the age
+    dependency ratio.
+
+3.  Decreasing the time required to start a business to increase economic growth
+
+4.  Boosting the oil production.
+
+There are many effects these policies have on the economy, social welfare, and
+
+many other factors when policymakers are taking decisions. We cannot say with
+
+certainty that all of these policies may induce expected results in each case
+
+since linear regressions do not imply causal relations between variables.
+
+Further research is needed to come up with case-specific policy recommendations.
